@@ -1,0 +1,2 @@
+# PDF cross-reference records contain format-required trailing spaces.
+*.pdf binary
