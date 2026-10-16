@@ -96,6 +96,10 @@ export async function execPlugin<S extends NodeSlot>(
             windowsHide: true,
             stdio: ["pipe", "pipe", "pipe"],
         });
+        // Pipe chunks may split a Chinese character or emoji between bytes.
+        // Let Node retain incomplete UTF-8 sequences across data events.
+        child.stdout?.setEncoding("utf8");
+        child.stderr?.setEncoding("utf8");
 
         let stdoutBuf = "";
         let stderrText = "";
@@ -145,16 +149,16 @@ export async function execPlugin<S extends NodeSlot>(
             { once: true },
         );
 
-        child.stdout?.on("data", (b: Buffer) => {
-            stdoutBuf += String(b);
+        child.stdout?.on("data", (chunk: string) => {
+            stdoutBuf += chunk;
         });
 
         // Stderr carries two interleaved streams: sentinel-framed progress
         // lines (-> notifyTask) and ordinary logs (forwarded to the terminal +
         // kept for crash diagnostics). Buffer by line to split them. Stdout
         // stays reserved for the single ABI-JSON response.
-        child.stderr?.on("data", (b: Buffer) => {
-            stderrLineBuf += String(b);
+        child.stderr?.on("data", (chunk: string) => {
+            stderrLineBuf += chunk;
             let nl = stderrLineBuf.indexOf("\n");
             while (nl !== -1) {
                 const line = stderrLineBuf.slice(0, nl);
@@ -166,7 +170,8 @@ export async function execPlugin<S extends NodeSlot>(
 
         child.on("error", (e) => fail(e));
 
-        child.on("exit", (code) => {
+        // `exit` can fire while stdout still has unread bytes.
+        child.on("close", (code) => {
             // Flush any final stderr line that arrived without a trailing newline.
             if (stderrLineBuf) {
                 handleStderrLine(stderrLineBuf);

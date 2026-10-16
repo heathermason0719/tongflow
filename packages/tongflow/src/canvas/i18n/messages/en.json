@@ -890,6 +890,7 @@
                 "unsupportedFormat": "Unsupported Format",
                 "supportedFormats": "Supported",
                 "download": "Download",
+                "downloadFailed": "Audio download failed. Please try again.",
                 "textEditor": "Text Editor",
                 "enterText": "Enter text content..."
             },
@@ -934,7 +935,7 @@
                 "cancel": "Cancel",
                 "startRecordingVideo": "Start Recording Video",
                 "addDocument": "Add Document",
-                "supportedDocFormats": "Supports multiple document formats",
+                "supportedDocFormats": "PDF, Markdown, TXT, Word and other documents",
                 "dragModel": "Drag 3D model files here or click to upload",
                 "supportedModelFormats": "Supported formats",
                 "modelHint": "Tip: Supports the following 3D file formats:"

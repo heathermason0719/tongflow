@@ -890,6 +890,7 @@
                 "unsupportedFormat": "지원되지 않는 형식",
                 "supportedFormats": "지원됨",
                 "download": "다운로드",
+                "downloadFailed": "오디오 다운로드에 실패했습니다. 다시 시도해 주세요.",
                 "textEditor": "텍스트 편집기",
                 "enterText": "텍스트 내용 입력..."
             },
@@ -934,7 +935,7 @@
                 "cancel": "취소",
                 "startRecordingVideo": "비디오 녹화 시작",
                 "addDocument": "문서 추가",
-                "supportedDocFormats": "다양한 문서 형식 지원",
+                "supportedDocFormats": "PDF, Markdown, TXT, Word 등 문서 지원",
                 "dragModel": "여기에 3D 모델 파일을 드래그하거나 클릭하여 업로드",
                 "supportedModelFormats": "지원되는 형식",
                 "modelHint": "팁: 다음 3D 파일 형식을 지원합니다:"

@@ -188,6 +188,8 @@ export async function executeWorkflowViaEngine(
                 windowsHide: true,
                 stdio: ["pipe", "pipe", "pipe"],
             });
+            child.stdout?.setEncoding("utf8");
+            child.stderr?.setEncoding("utf8");
 
             let stdoutBuf = "";
             let finalResult: Record<string, unknown> | null = null;
@@ -228,8 +230,8 @@ export async function executeWorkflowViaEngine(
                 { once: true },
             );
 
-            child.stdout?.on("data", (b: Buffer) => {
-                stdoutBuf += String(b);
+            child.stdout?.on("data", (chunk: string) => {
+                stdoutBuf += chunk;
                 let nl = stdoutBuf.indexOf("\n");
                 while (nl !== -1) {
                     onLine(stdoutBuf.slice(0, nl));
@@ -238,14 +240,14 @@ export async function executeWorkflowViaEngine(
                 }
             });
 
-            child.stderr?.on("data", (b: Buffer) => {
-                const s = String(b).trim();
+            child.stderr?.on("data", (chunk: string) => {
+                const s = chunk.trim();
                 if (s) logger.info(`[engine:stderr] ${s}`);
             });
 
             child.on("error", (e) => reject(e));
 
-            child.on("exit", async (code) => {
+            child.on("close", async (code) => {
                 if (controller.signal.aborted) return;
                 if (stdoutBuf.trim()) onLine(stdoutBuf);
 

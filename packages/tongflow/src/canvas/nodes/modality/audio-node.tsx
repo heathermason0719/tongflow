@@ -9,12 +9,14 @@ import {
     useFileAsyncLoader,
     useFileAsyncLoaderBatch,
 } from "../../hooks/use-file-async-loader";
+import { downloadFile } from "../../lib/file/download";
 import { Button } from "../../ui/button";
 import {
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
 } from "../../ui/dropdown-menu";
+import { showErrorToast } from "../../ui/error-toast";
 import { Waterfall } from "../../ui/waterfall";
 import { BaseNodeShell } from "../base/base-node-shell";
 import {
@@ -191,6 +193,7 @@ const AudioNode = ({ selected, data }: AudioNodeRfProps) => {
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [isWaterfallFullScreen, setIsWaterfallFullScreen] = useState(false);
     const [audioError, setAudioError] = useState(false);
+    const [isDownloading, setIsDownloading] = useState(false);
 
     // Refs for audio elements
     const singleAudioRef = useRef<HTMLAudioElement>(null);
@@ -215,11 +218,17 @@ const AudioNode = ({ selected, data }: AudioNodeRfProps) => {
         setAudioError(false);
     }, [singleAudioUrl]);
 
-    const handleDownload = (url: string, fileKey: string) => {
-        const ext = fileKey.includes(".") ? fileKey.split(".").pop() : "mp3";
-        const filename = `audio.${ext}`;
-        const downloadUrl = `${url}${url.includes("?") ? "&" : "?"}download=${filename}`;
-        window.open(downloadUrl, "_blank");
+    const handleDownload = async (url: string, fileKey: string) => {
+        if (isDownloading) return;
+        setIsDownloading(true);
+        try {
+            await downloadFile(url, fileKey);
+        } catch (error) {
+            logger.error("Audio download failed:", error);
+            showErrorToast({ message: t("downloadFailed") });
+        } finally {
+            setIsDownloading(false);
+        }
     };
 
     return (
@@ -274,6 +283,7 @@ const AudioNode = ({ selected, data }: AudioNodeRfProps) => {
                                 <>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem
+                                        disabled={isDownloading}
                                         onClick={() =>
                                             handleDownload(
                                                 singleAudioUrl,

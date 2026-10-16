@@ -91,7 +91,7 @@ const UploadTab = () => {
                         id={`file-upload-${id}`}
                         type="file"
                         multiple
-                        accept=".pdf,.doc,.docx,.txt,.xlsx,.xls,.pptx,.ppt,.odt,.pages,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.oasis.opendocument.text"
+                        accept=".pdf,.md,.markdown,.doc,.docx,.txt,.xlsx,.xls,.pptx,.ppt,.odt,.pages,application/pdf,text/markdown,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.oasis.opendocument.text"
                         onChange={handleFileChange}
                         className="hidden"
                     />

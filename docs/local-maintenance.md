@@ -12,8 +12,14 @@
 配套 OpenAI 插件的维护提交为 `03fbcd826b45ecf9a737abdeaadd299a3fff8876`。
 该插件是独立 Git 仓库，
 不是主仓库的子模块。主仓库忽略 `plugins/*`，因此必须分别备份、同步和提交。
-两个仓库的 `origin` 均保留官方 GitHub 地址。本地维护分支没有关联远端分支，
-本轮没有执行 Push，也没有更新官方 `main`。
+两个仓库的 `origin` 均为用户自己的 Fork：`heathermason0719/tongflow` 与
+`heathermason0719/tongflow-api-openai`。官方仓库保存在 `upstream`，且其 Push 地址已禁用。
+两个 `local/bailian-compat` 分支均保留原维护基线并跟踪各自 Fork 的同名分支。
+
+音频下载和文档处理在独立开发分支维护：主仓库 `fix/audio-download-documents`，
+OpenAI 插件 `fix/local-document-extraction`。使用本轮最终版本时须同时保留这两个分支，
+不能只恢复旧的兼容基线。功能范围、使用方法和离线浏览器验收见
+[音频下载与文档处理](audio-and-documents.zh.md)。
 
 主仓库保存兼容 Key 的完整提取、模型 ID 编辑及提交逻辑、多语言说明和回归测试。
 插件仓库保存兼容端点直接使用指定模型的修复、配置说明与两项离线回归。
@@ -29,16 +35,16 @@ Key、工作台 SQLite 数据、上传内容、生产构建和浏览器证据继
 
 ```bash
 git branch backup/before-upstream-YYYYMMDD
-git switch local/bailian-compat
-git fetch origin
-git merge origin/main
+git switch <正在使用的本地维护或功能分支>
+git fetch upstream
+git merge upstream/main
 ```
 
 日期后缀请使用未占用的名称。主仓库和 OpenAI 插件仓库分别执行这些步骤。
 使用 Merge 保留已有维护提交和官方历史；出现冲突时逐项保留兼容行为，
 或使用 `git merge --abort` 回到合并前状态。不要使用 `reset --hard`、
 强制检出或重新克隆覆盖当前目录。主仓库最初是浅克隆；若 Git 提示历史不足，
-先在主仓库运行 `git fetch --unshallow origin`，再继续正常合并，不要允许无关历史合并。
+先在主仓库运行 `git fetch --unshallow upstream`，再继续正常合并，不要允许无关历史合并。
 
 合并后先检查模型 ID 不会被 GPT 默认值覆盖、兼容 Key 不会被截断、
 兼容服务不需要提供 `/models`，并确认 Qwen Audio 凭据和插件保持原样。

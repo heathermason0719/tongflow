@@ -1,0 +1,32 @@
+{
+    "short.txt": {
+        "bytes": 367,
+        "characters": 132,
+        "sha256": "8bc07e8a2c3bf677b28a186ad27b9f022bf326f93eb8b4242cf0b2a9bdaacb96",
+        "text_sha256": "8bc07e8a2c3bf677b28a186ad27b9f022bf326f93eb8b4242cf0b2a9bdaacb96"
+    },
+    "short.md": {
+        "bytes": 469,
+        "characters": 176,
+        "sha256": "ed147dd4de99fc377a40c2a976801268f7014b5ffcd4e78985a38ffe5e202b1d",
+        "text_sha256": "ed147dd4de99fc377a40c2a976801268f7014b5ffcd4e78985a38ffe5e202b1d"
+    },
+    "short.docx": {
+        "bytes": 1259,
+        "characters": 142,
+        "sha256": "359ecfb7382b1a42c4de1478ca1e274ad99551b2f09fcfea24c07fa3f50e57c8",
+        "text_sha256": "cb532def15fc604aa5228cf4b0fb024f1002b4693fc054cb842d7a4363d37175"
+    },
+    "long.txt": {
+        "bytes": 175722,
+        "characters": 63458,
+        "sha256": "cb99e07dc9ab88ae25724a8c4b2949ace60145880c106d4720f1f2858bdc96be",
+        "text_sha256": "cb99e07dc9ab88ae25724a8c4b2949ace60145880c106d4720f1f2858bdc96be"
+    },
+    "existing.pdf": {
+        "bytes": 607,
+        "characters": 32,
+        "sha256": "698bdd655be1f69764b81cfce21fc3ab5867d16cfdfdcc06983bb4260fb43a9c",
+        "text_sha256": "ddaef05209a5f2ac5ab1a46262e7fdf007afe46a4093f21069310eeff9a9bc1f"
+    }
+}

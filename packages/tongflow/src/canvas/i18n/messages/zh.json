@@ -890,6 +890,7 @@
                 "unsupportedFormat": "不支持的格式",
                 "supportedFormats": "支持的格式",
                 "download": "下载",
+                "downloadFailed": "音频下载失败，请重试。",
                 "textEditor": "编辑文本",
                 "enterText": "请输入文本内容..."
             },
@@ -934,7 +935,7 @@
                 "cancel": "取消",
                 "startRecordingVideo": "开始录制视频",
                 "addDocument": "添加文档",
-                "supportedDocFormats": "支持多种文档格式",
+                "supportedDocFormats": "支持 PDF、Markdown、TXT、Word 等文档",
                 "dragModel": "拖拽3D模型文件到此处或点击上传",
                 "supportedModelFormats": "支持格式",
                 "modelHint": "提示: 支持以下3D文件格式："

@@ -804,6 +804,7 @@
                 "unsupportedFormat": "サポートされていない形式",
                 "supportedFormats": "サポート形式",
                 "download": "ダウンロード",
+                "downloadFailed": "音声のダウンロードに失敗しました。もう一度お試しください。",
                 "textEditor": "テキストエディター",
                 "enterText": "テキストを入力してください..."
             },
@@ -848,7 +849,7 @@
                 "cancel": "キャンセル",
                 "startRecordingVideo": "動画録画を開始",
                 "addDocument": "ドキュメントを追加",
-                "supportedDocFormats": "複数のドキュメント形式をサポート",
+                "supportedDocFormats": "PDF、Markdown、TXT、Word などの文書に対応",
                 "dragModel": "3Dモデルファイルをここにドラッグするか、クリックしてアップロード",
                 "supportedModelFormats": "サポート形式",
                 "modelHint": "ヒント：以下の3Dファイル形式をサポート："

@@ -20,6 +20,7 @@ import { findMissingRequiredKey } from "@/lib/plugins/missing-env-key";
 import { loadPluginEnvDecls } from "@/lib/plugins/plugin-env-manifests.server";
 import { loadEnvStore } from "@/lib/settings/env-store.server";
 import { serializeTaskErrorForDb } from "@/lib/task/error-envelope";
+import { handleTaskCompletion } from "./completion";
 import { notifyTask, registerTask, removeTask } from "./emitter";
 import { executeWorkflowViaEngine } from "./engine-delegate.server";
 
@@ -311,6 +312,21 @@ export async function executeTask(taskId: string): Promise<void> {
             logger.info(
                 `[TaskRunner] task=${taskId} plugin returned success=true`,
             );
+            // A parsed document is reusable text, not only a transient canvas
+            // result. Persist it before publishing completion so library reads
+            // immediately after the SSE event see the exact extracted text.
+            if (taskData.nodeSlot === "parse-document") {
+                const saved = await handleTaskCompletion(
+                    taskId,
+                    TaskStatus.COMPLETED,
+                    { ...result, feature: taskData.nodeSlot },
+                );
+                if (!saved.success) {
+                    throw new Error(
+                        saved.error || "Could not save document text material",
+                    );
+                }
+            }
             notifyTask(
                 taskId,
                 TaskStatus.COMPLETED,
