@@ -262,7 +262,9 @@
                 "pluginRegistryLoadError": "プラグイン登録情報を読み込めませんでした：{message}",
                 "pluginSelectPlaceholder": "リポジトリを選択…",
                 "missingImplTitle": "実装が未選択",
-                "missingImplDescription": "このノードに利用可能なプラグインがインストールされていません（または未選択です）。実行前に、プラグインマネージャーからインストールするか、インストール済みのプラグインを選択してください。"
+                "missingImplDescription": "このノードに利用可能なプラグインがインストールされていません（または未選択です）。実行前に、プラグインマネージャーからインストールするか、インストール済みのプラグインを選択してください。",
+                "pluginModelServiceDefault": "空欄でサービス設定を使用",
+                "pluginModelCompatibleHint": "qwen-plus などのモデル ID を入力。空欄では OPENAI_CHAT_MODEL を使用します。"
             },
             "common": {
                 "enterInstructions": "指示を入力してください...",

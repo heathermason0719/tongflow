@@ -36,6 +36,8 @@ export interface TokenSpec {
     /** Prefix-anchored pattern that picks the value out of any pasted text.
      * Absent = loose extraction (strip `KEY=`, quotes, surrounding prose). */
     pattern?: RegExp;
+    /** Provider-specific complete-value extraction (e.g. opaque gateway keys). */
+    extract?: (raw: string) => string;
     /** Show the matched value masked in the parse status (ids yes, secrets no). */
     masked: boolean;
     /** i18n keys (within the provider namespace) for the parse status line. */
@@ -229,7 +231,11 @@ export function TokenConnectForm({
     // Token pages usually show one copyable command/value, so accept any
     // pasted blob and extract the value(s) — no field splitting required.
     const parsed = config.specs.map((spec) =>
-        spec.pattern ? (raw.match(spec.pattern)?.[0] ?? "") : extractLoose(raw),
+        spec.extract
+            ? spec.extract(raw)
+            : spec.pattern
+              ? (raw.match(spec.pattern)?.[0] ?? "")
+              : extractLoose(raw),
     );
     const allFound = parsed.every(Boolean);
 

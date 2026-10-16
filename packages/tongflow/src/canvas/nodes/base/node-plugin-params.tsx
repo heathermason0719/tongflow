@@ -11,6 +11,7 @@ import type {
 } from "../../../core";
 import { normalizePluginParams, samePluginParams } from "../../../core";
 import useFlow from "../../hooks/use-flow";
+import { resolvePluginModel } from "../../hooks/plugin-model-selection";
 import {
     useNodePluginModels,
     useNodePluginParams,
@@ -57,9 +58,7 @@ export function NodePluginParams({ nodeSlot, data }: NodePluginParamsProps) {
     const { resolved: pluginId } = useResolvedPluginId(nodeSlot, data);
     const models = useNodePluginModels(nodeSlot, pluginId);
     const currentModel = String(data.pluginModel ?? "").trim();
-    const model = models.includes(currentModel)
-        ? currentModel
-        : (models[0] ?? undefined);
+    const model = resolvePluginModel(pluginId, currentModel, models);
     const entries = useNodePluginParams(nodeSlot, pluginId, model);
 
     const values = useMemo(() => readParams(data), [data]);

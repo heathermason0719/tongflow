@@ -1,6 +1,7 @@
 import { useNodeId, useReactFlow } from "@xyflow/react";
 import { useCallback, useEffect } from "react";
 import { normalizePluginParams } from "../../core";
+import { resolvePluginModel } from "./plugin-model-selection";
 import {
     getNodePluginModels,
     getNodePluginParams,
@@ -72,7 +73,8 @@ export function useNodePluginResolver(feature: string | undefined) {
     }, [nodeId, getNode, defaultPluginIdFromRegistry, pluginOptions]);
 
     /**
-     * Model for router-style plugins: the node's `pluginModel` when it is one
+     * Compatible endpoints accept an explicit model id, or defer to service
+     * configuration when empty. Other routers use `pluginModel` when it is one
      * of the active plugin's models (declared shortlist or live catalog), else
      * that plugin's default (first declared model). `undefined` when the
      * plugin declares none — the create-task API then omits the field entirely.
@@ -82,13 +84,12 @@ export function useNodePluginResolver(feature: string | undefined) {
         const pluginId = resolveActivePluginId();
         if (!pluginId) return undefined;
         const models = getNodePluginModels(feature, pluginId);
-        if (models.length === 0) return undefined;
         const n = nodeId ? getNode(nodeId) : undefined;
         const fromData = String(
             (n?.data as { pluginModel?: string } | undefined)?.pluginModel ??
                 "",
         ).trim();
-        return models.includes(fromData) ? fromData : models[0];
+        return resolvePluginModel(pluginId, fromData, models);
     }, [feature, nodeId, getNode, resolveActivePluginId]);
 
     /**

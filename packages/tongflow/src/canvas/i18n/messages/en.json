@@ -262,7 +262,9 @@
                 "pluginRegistryLoadError": "Could not load the plugin registry: {message}",
                 "pluginSelectPlaceholder": "Select a repo…",
                 "missingImplTitle": "Missing Implementation",
-                "missingImplDescription": "No plugin is installed for this node (or none is selected). Install one from the plugin manager, or pick an installed plugin, before running."
+                "missingImplDescription": "No plugin is installed for this node (or none is selected). Install one from the plugin manager, or pick an installed plugin, before running.",
+                "pluginModelServiceDefault": "Use service configuration when empty",
+                "pluginModelCompatibleHint": "Enter your provider model id, e.g. qwen-plus; leave empty to use OPENAI_CHAT_MODEL."
             },
             "common": {
                 "enterInstructions": "Enter instructions...",

@@ -247,5 +247,33 @@
         "retry": "다시 시도",
         "operationFailed": "작업에 실패했습니다. 다시 시도해 주세요",
         "fetchFailed": "포트폴리오를 불러오지 못했습니다. 다시 시도해 주세요"
+    },
+    "CompatibleConnect": {
+        "title": "OpenAI 호환 API 설정",
+        "subtitle": "내 {provider} API 키를 사용하며, 사용량은 내 계정으로 청구됩니다.",
+        "cardTitle": "{provider}",
+        "story1": "설정한 서비스를 OpenAI 호환 API로 사용합니다. OpenAI 계정은 필요하지 않습니다.",
+        "story2": "대상 서비스의 API Key를 사용하고 고급 설정에서 URL과 모델을 지정하세요.",
+        "storyManaged": "키는 암호화되어 저장되며 나만 사용할 수 있습니다.",
+        "storyLocal": "키는 이 컴퓨터 밖으로 나가지 않습니다.",
+        "step1Title": "1단계 — {provider}에서 API 키 발급",
+        "openTokens": "{provider} 키 페이지 열기",
+        "signupHint": "계정이 없다면 먼저 가입하세요.",
+        "step2Title": "2단계 — 여기에 붙여넣기",
+        "pasteHint": "전체 API Key 또는 환경 변수 할당문을 붙여넣으세요.",
+        "detected": "API 키 {id}",
+        "missing": "API 키를 아직 찾지 못했어요",
+        "saveConnect": "저장하고 연결",
+        "connectedToast": "호환 API Key 저장됨",
+        "connectFailed": "저장에 실패했어요. 다시 시도해 주세요",
+        "cardBlurb": "대상 서비스의 API Key를 사용합니다. OpenAI 구매는 필요하지 않습니다.",
+        "connectCta": "호환 API Key 설정",
+        "connectedBadge": "연결됨",
+        "reconnect": "다시 연결",
+        "disconnect": "연결 해제",
+        "disconnectedToast": "{provider} 연결을 해제했습니다",
+        "disconnectConfirmTitle": "{provider} 연결을 해제할까요?",
+        "disconnectConfirmBody": "해제하면 {provider} 노드를 쓸 수 없습니다(다시 연결하면 복구됩니다). {provider} 계정 자체에는 영향이 없어요.",
+        "disconnectCancel": "취소"
     }
 }

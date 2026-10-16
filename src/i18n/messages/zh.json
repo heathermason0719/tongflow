@@ -247,5 +247,33 @@
         "retry": "重试",
         "operationFailed": "操作失败，请重试",
         "fetchFailed": "获取作品集失败，请重试"
+    },
+    "CompatibleConnect": {
+        "title": "配置 OpenAI 兼容接口",
+        "subtitle": "使用目标模型服务的 API Key，不需要 OpenAI 账号。",
+        "cardTitle": "{provider}",
+        "story1": "通过 OpenAI 兼容协议调用你配置的模型服务，不需要 OpenAI 账号。",
+        "story2": "使用目标服务（例如阿里云百炼）提供的 API Key，并在高级设置中填写服务地址和模型。",
+        "storyManaged": "Key 云端加密存储，只属于你。",
+        "storyLocal": "Key 只保存在你自己的电脑上。",
+        "step1Title": "第一步：去 {provider} 获取 API Key",
+        "openTokens": "打开 {provider} 的 Key 页面",
+        "signupHint": "还没有账号？先注册一个。",
+        "step2Title": "第二步：粘贴到这里",
+        "pasteHint": "直接粘贴完整 API Key，或复制包含 Key 的环境变量赋值。支持目标服务自己的 Key 格式。",
+        "detected": "API Key {id}",
+        "missing": "还没识别到 API Key",
+        "saveConnect": "保存并连接",
+        "connectedToast": "兼容接口 Key 已保存",
+        "connectFailed": "保存失败，请重试",
+        "cardBlurb": "使用目标模型服务的 API Key；不需要连接或购买 OpenAI 服务。",
+        "connectCta": "设置兼容接口 Key",
+        "connectedBadge": "已连接",
+        "reconnect": "重新连接",
+        "disconnect": "断开连接",
+        "disconnectedToast": "已断开 {provider}",
+        "disconnectConfirmTitle": "断开 {provider}？",
+        "disconnectConfirmBody": "断开后 {provider} 的节点将无法调用，重新连接即可恢复。你的 {provider} 账号本身不受影响。",
+        "disconnectCancel": "取消"
     }
 }

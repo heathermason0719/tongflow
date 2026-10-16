@@ -8,6 +8,7 @@ import {
     MODAL_TOKEN_SECRET_ENV,
 } from "@/lib/settings/env-key-metadata";
 import type { TokenProviderConfig, TokenVerifyResult } from "./token-connect";
+import { extractCompatibleKey } from "./provider-credentials";
 
 // Prefix-anchored patterns; a minimum tail length avoids matching a bare
 // prefix the user is still typing.
@@ -92,7 +93,6 @@ const PROVIDER_KEY_PATTERNS: Record<
 > = {
     // sk-or- must be tried via its own entry; the generic sk- pattern also
     // matches it, so OpenRouter gets the longer prefix explicitly.
-    OPENAI_API_KEY: { pattern: /sk-[A-Za-z0-9_-]{10,}/, placeholder: "sk-…" },
     DEEPSEEK_API_KEY: {
         pattern: /sk-[A-Za-z0-9_-]{10,}/,
         placeholder: "sk-…",
@@ -124,14 +124,17 @@ export function providerConnectConfig(
     tokensUrl?: string,
 ): TokenProviderConfig {
     const known = PROVIDER_KEY_PATTERNS[envKey];
+    const compatible = envKey === "OPENAI_API_KEY";
     return {
-        ns: "ProviderConnect",
-        tokensUrl,
+        ns: compatible ? "CompatibleConnect" : "ProviderConnect",
+        // A compatible endpoint's key need not come from OpenAI.
+        tokensUrl: compatible ? undefined : tokensUrl,
         pastePlaceholder: known?.placeholder ?? "API Key",
         specs: [
             {
                 envKey,
                 pattern: known?.pattern,
+                ...(compatible ? { extract: extractCompatibleKey } : {}),
                 masked: true,
                 detectedKey: "detected",
                 missingKey: "missing",

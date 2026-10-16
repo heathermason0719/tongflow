@@ -262,7 +262,9 @@
                 "pluginRegistryLoadError": "无法加载插件注册表：{message}",
                 "pluginSelectPlaceholder": "选择一个仓库…",
                 "missingImplTitle": "未配置实现",
-                "missingImplDescription": "该节点尚未安装可用插件（或未选择）。请先在插件管理中安装一个插件，或选择一个已安装的插件，然后再运行。"
+                "missingImplDescription": "该节点尚未安装可用插件（或未选择）。请先在插件管理中安装一个插件，或选择一个已安装的插件，然后再运行。",
+                "pluginModelServiceDefault": "留空使用服务配置",
+                "pluginModelCompatibleHint": "可填写目标服务的模型 ID，例如 qwen-plus；留空使用 OPENAI_CHAT_MODEL。"
             },
             "common": {
                 "enterInstructions": "请输入指令...",
