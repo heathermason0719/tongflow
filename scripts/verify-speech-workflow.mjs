@@ -601,11 +601,32 @@ try {
         (n) => n.type === "audioNode" && n.id !== "voice",
     );
     assert.equal(audioNode.data.fileKeys.length, segments.length);
+    const associations = [];
+    for (let i = 0; i < clone.data.speechResults.length; i++) {
+        const row = clone.data.speechResults[i];
+        assert.equal(audioNode.data.fileKeys[i], row.audio);
+        const response = await fetch(`${base}/api/uploads/${row.audio}`);
+        assert.equal(response.status, 200);
+        const audioSha256 = sha(Buffer.from(await response.arrayBuffer()));
+        assert.ok(
+            ttsCalls.some(
+                (c) =>
+                    c.text_prompt.includes(row.text.trim()) &&
+                    c.outputSha256 === audioSha256,
+            ),
+        );
+        associations.push({
+            segment: i + 1,
+            audioSha256,
+            textSha256: sha(Buffer.from(row.text)),
+        });
+    }
     records.checks.batch = {
         orderedResults: clone.data.speechResults,
         requests: ttsCalls,
         orderedAudioKeys: audioNode.data.fileKeys,
         oneReferenceForAll: true,
+        associations,
     };
     await shot("05-batch-source-audio-correspondence");
     write("workflow-first-run.json", g);

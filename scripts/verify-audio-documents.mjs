@@ -942,7 +942,16 @@ try {
     console.error(`Evidence: ${output}`);
     process.exitCode = 1;
 } finally {
-    if (browser) await browser.close();
+    // Chrome can finish its work while its automation pipe lingers on macOS.
+    // Bound cleanup to this script's own browser, after all assertions settle.
+    if (browser) {
+        await Promise.race([browser.close(), pause(5000)]);
+        if (browser.process()?.exitCode === null) browser.process().kill();
+    }
     if (app) app.kill("SIGTERM");
+    mock.closeAllConnections();
     await new Promise((resolve) => mock.close(resolve));
 }
+// Do not let an idle automation transport keep this command alive. The catch
+// above preserves a failing assertion's nonzero status.
+process.exit(process.exitCode ?? 0);
