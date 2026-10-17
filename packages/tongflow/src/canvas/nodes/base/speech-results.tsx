@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslations } from "use-intl";
-import type { BaseNodeData } from "../../../core";
+import { type BaseNodeData, numberedAudioFilename } from "../../../core";
 import { downloadFile } from "../../lib/file/download";
 import { getFileUrl } from "../../lib/file/url";
 import { Button } from "../../ui/button";
@@ -84,6 +84,11 @@ export function SpeechResults({
                                     void downloadFile(
                                         getFileUrl(row.audio!),
                                         row.audio!,
+                                        numberedAudioFilename(
+                                            i,
+                                            row.audio!,
+                                            results.length,
+                                        ),
                                     )
                                         .catch((e) =>
                                             setErrors((current) => ({

@@ -30,6 +30,8 @@ export interface StorageDriver {
     /** Open a seekable stream without buffering a whole local media file. */
     openRead?(fileKey: string): Promise<{
         size: number;
+        /** Server-only seekable source, for local media inspection tools. */
+        localPath?: string;
         stream(
             start: number,
             end: number,

@@ -1027,6 +1027,19 @@
                 "add": "新增段落",
                 "empty": "请删除空段或填入文字，至少保留一段后再采用。",
                 "close": "完成编辑"
+            },
+            "fcpExport": {
+                "title": "导出 FCP 剪辑工程",
+                "description": "按当前顺序复制 {count} 份独立音频，首尾相接，不合并、不转码。",
+                "name": "工程名称",
+                "locationHint": "点击下方按钮选择保存位置，并在 Chrome 询问修改文件时选择「允许」。会新建工程目录；同名目录自动加序号，保留已有导出。请将 FCPXML 和 Audio 文件夹一起保留或移动。",
+                "checking": "正在选择位置并检查全部音频…",
+                "progress": "正在复制音频 {completed}/{total}…",
+                "success": "已导出 {count} 个独立片段。",
+                "importHint": "在 Final Cut Pro 选择「文件 → 导入 → XML」，打开上述 FCPXML。素材使用相对路径。非 WAV 素材保留原格式。",
+                "close": "关闭",
+                "exporting": "正在导出…",
+                "chooseAndExport": "选择位置并导出"
             }
         }
     },

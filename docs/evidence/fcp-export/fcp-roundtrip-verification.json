@@ -1,0 +1,122 @@
+{
+    "actualFinalCutImport": true,
+    "actualFinalCutExportRoundtrip": true,
+    "version": "1.14",
+    "clips": [
+        {
+            "segment": 1,
+            "filename": "01.wav",
+            "duration": "16502400/720000s",
+            "offset": "0s",
+            "mediaExists": true
+        },
+        {
+            "segment": 2,
+            "filename": "02.wav",
+            "duration": "27331200/720000s",
+            "offset": "16502400/720000s",
+            "mediaExists": true
+        },
+        {
+            "segment": 3,
+            "filename": "03.wav",
+            "duration": "26150400/720000s",
+            "offset": "43833600/720000s",
+            "mediaExists": true
+        },
+        {
+            "segment": 4,
+            "filename": "04.wav",
+            "duration": "29059200/720000s",
+            "offset": "69984000/720000s",
+            "mediaExists": true
+        },
+        {
+            "segment": 5,
+            "filename": "05.wav",
+            "duration": "29030400/720000s",
+            "offset": "99043200/720000s",
+            "mediaExists": true
+        },
+        {
+            "segment": 6,
+            "filename": "06.wav",
+            "duration": "22435200/720000s",
+            "offset": "128073600/720000s",
+            "mediaExists": true
+        },
+        {
+            "segment": 7,
+            "filename": "07.wav",
+            "duration": "36s",
+            "offset": "150508800/720000s",
+            "mediaExists": true
+        },
+        {
+            "segment": 8,
+            "filename": "08.wav",
+            "duration": "17539200/720000s",
+            "offset": "176428800/720000s",
+            "mediaExists": true
+        },
+        {
+            "segment": 9,
+            "filename": "09.wav",
+            "duration": "33s",
+            "offset": "193968000/720000s",
+            "mediaExists": true
+        },
+        {
+            "segment": 10,
+            "filename": "10.wav",
+            "duration": "30009600/720000s",
+            "offset": "217728000/720000s",
+            "mediaExists": true
+        },
+        {
+            "segment": 11,
+            "filename": "11.wav",
+            "duration": "18028800/720000s",
+            "offset": "247737600/720000s",
+            "mediaExists": true
+        },
+        {
+            "segment": 12,
+            "filename": "12.wav",
+            "duration": "23932800/720000s",
+            "offset": "265766400/720000s",
+            "mediaExists": true
+        },
+        {
+            "segment": 13,
+            "filename": "13.wav",
+            "duration": "25084800/720000s",
+            "offset": "289699200/720000s",
+            "mediaExists": true
+        },
+        {
+            "segment": 14,
+            "filename": "14.wav",
+            "duration": "30931200/720000s",
+            "offset": "314784000/720000s",
+            "mediaExists": true
+        },
+        {
+            "segment": 15,
+            "filename": "15.wav",
+            "duration": "21657600/720000s",
+            "offset": "345715200/720000s",
+            "mediaExists": true
+        },
+        {
+            "segment": 16,
+            "filename": "16.wav",
+            "duration": "30124800/720000s",
+            "offset": "367372800/720000s",
+            "mediaExists": true
+        }
+    ],
+    "totalSeconds": 552.08,
+    "exactOrderAndTimingMatch": true,
+    "relinkRequired": false
+}

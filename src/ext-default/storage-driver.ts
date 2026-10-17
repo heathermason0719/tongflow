@@ -41,6 +41,7 @@ export const storageDriver: StorageDriver = {
         if (!info.isFile()) throw new Error("Not a file");
         return {
             size: info.size,
+            localPath: resolved,
             stream: (start, end, signal) =>
                 Readable.toWeb(
                     createReadStream(resolved, { start, end, signal }),

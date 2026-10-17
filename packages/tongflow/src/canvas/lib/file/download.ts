@@ -6,8 +6,15 @@ import { getCanvasHost, hostFetch } from "../../host";
 export async function downloadFile(
     url: string,
     fileKey: string,
+    suggestedName?: string,
 ): Promise<void> {
     const target = new URL(url, window.location.href);
+    const filename =
+        suggestedName ??
+        decodeURIComponent(
+            new URL(fileKey, window.location.href).pathname.split("/").pop() ||
+                "audio",
+        );
     // Local attachments go straight to Chrome's streaming download manager.
     // Avoid holding every multi-megabyte WAV twice (Blob + object URL) in JS.
     if (
@@ -15,10 +22,7 @@ export async function downloadFile(
         target.origin === window.location.origin &&
         target.pathname.startsWith("/api/uploads/")
     ) {
-        target.searchParams.set(
-            "download",
-            fileKey.split("/").pop() || "audio",
-        );
+        target.searchParams.set("download", filename);
         const check = await hostFetch(target.href, {
             method: "HEAD",
             signal: AbortSignal.timeout(30_000),
@@ -26,7 +30,7 @@ export async function downloadFile(
         if (!check.ok) throw new Error(`Download failed: HTTP ${check.status}`);
         const link = document.createElement("a");
         link.href = target.href;
-        link.download = fileKey.split("/").pop() || "audio";
+        link.download = filename;
         document.body.appendChild(link);
         link.click();
         link.remove();
@@ -40,8 +44,7 @@ export async function downloadFile(
     const objectUrl = URL.createObjectURL(blob);
     const link = document.createElement("a");
     // URL paths exclude signed query strings, which are not file extensions.
-    const pathname = new URL(fileKey, window.location.href).pathname;
-    link.download = decodeURIComponent(pathname.split("/").pop() || "audio");
+    link.download = filename;
     link.href = objectUrl;
     document.body.appendChild(link);
     link.click();

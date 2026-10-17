@@ -4,11 +4,12 @@ import { memo, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslations } from "use-intl";
 import type { RfDataNodeProps } from "../../../core";
-import { logger } from "../../../core";
+import { logger, numberedAudioFilename } from "../../../core";
 import {
     useFileAsyncLoader,
     useFileAsyncLoaderBatch,
 } from "../../hooks/use-file-async-loader";
+import useFlow from "../../hooks/use-flow";
 import { downloadFile } from "../../lib/file/download";
 import { Button } from "../../ui/button";
 import {
@@ -27,6 +28,7 @@ import {
     NodeHeaderMenuAction,
     NodeHeaderTitle,
 } from "../base/node-header";
+import { FcpExportDialog } from "./fcp-export-dialog";
 import { ModalityPlaceholder } from "./modality-placeholder";
 
 type AudioNodeRfProps = RfDataNodeProps<"audioNode">;
@@ -186,6 +188,24 @@ const AudioNode = ({ selected, data }: AudioNodeRfProps) => {
     const t = useTranslations("Workspace.nodes.modal");
     const keys: string[] = data.fileKeys ?? [];
     const _id = useNodeId();
+    const fcpT = useTranslations("Workspace.nodes.fcpExport");
+    const workflowName = useFlow((s) => s.workflowName);
+    const singleSegmentFilename = useFlow((s) => {
+        // A batch output may be empty while upstream rows are still pending.
+        if (!keys[0] || !/\.[a-z0-9]{1,8}(?:[?#].*)?$/i.test(keys[0]))
+            return undefined;
+        for (const edge of s.edges.filter((e) => e.target === _id)) {
+            const source = s.nodes.find((n) => n.id === edge.source);
+            const rows = source?.data.speechResults as
+                | { audio?: string }[]
+                | undefined;
+            const index = rows?.findIndex((row) => row.audio === keys[0]);
+            if (index !== undefined && index >= 0)
+                return numberedAudioFilename(index, keys[0], rows!.length);
+        }
+        return undefined;
+    });
+    const [fcpOpen, setFcpOpen] = useState(false);
     const [isFullScreen, setIsFullScreen] = useState(false);
     const [isWaterfallFullScreen, setIsWaterfallFullScreen] = useState(false);
     const [audioError, setAudioError] = useState(false);
@@ -218,7 +238,7 @@ const AudioNode = ({ selected, data }: AudioNodeRfProps) => {
         if (isDownloading) return;
         setIsDownloading(true);
         try {
-            await downloadFile(url, fileKey);
+            await downloadFile(url, fileKey, singleSegmentFilename);
         } catch (error) {
             logger.error("Audio download failed:", error);
             showErrorToast({ message: t("downloadFailed") });
@@ -275,6 +295,14 @@ const AudioNode = ({ selected, data }: AudioNodeRfProps) => {
                             <DropdownMenuLabel>
                                 {t("actions")}
                             </DropdownMenuLabel>
+                            {keys.length > 0 && (
+                                <DropdownMenuItem
+                                    data-testid="export-fcp-project"
+                                    onClick={() => setFcpOpen(true)}
+                                >
+                                    {fcpT("title")}
+                                </DropdownMenuItem>
+                            )}
                             {isSingle && singleAudioUrl && (
                                 <>
                                     <DropdownMenuSeparator />
@@ -398,6 +426,14 @@ const AudioNode = ({ selected, data }: AudioNodeRfProps) => {
                     </div>
                 )}
             </BaseNodeShell>
+            {fcpOpen && (
+                <FcpExportDialog
+                    open={fcpOpen}
+                    onOpenChange={setFcpOpen}
+                    fileKeys={keys}
+                    defaultName={`${workflowName || "TongFlow"}_参考配音`}
+                />
+            )}
 
             {/* Full screen modals - rendered outside BaseNodeShell */}
             {isFullScreen && isSingle && keys[0] && (

@@ -1027,6 +1027,19 @@
                 "add": "Add segment",
                 "empty": "Remove or fill empty segments; keep at least one before adopting.",
                 "close": "Finish editing"
+            },
+            "fcpExport": {
+                "title": "Export FCP editing project",
+                "description": "Copy {count} separate audio files in their current order, back-to-back, without merging or transcoding.",
+                "name": "Project name",
+                "locationHint": "Choose a destination below, then allow Chrome to edit files when prompted. A new project folder is created; existing exports are preserved. Keep or move the FCPXML and Audio folder together.",
+                "checking": "Choosing a folder and checking all audio…",
+                "progress": "Copying audio {completed}/{total}…",
+                "success": "Exported {count} independent clips.",
+                "importHint": "In Final Cut Pro, choose File → Import → XML and open this FCPXML. Media uses relative paths. Non-WAV sources keep their format.",
+                "close": "Close",
+                "exporting": "Exporting…",
+                "chooseAndExport": "Choose folder and export"
             }
         }
     },

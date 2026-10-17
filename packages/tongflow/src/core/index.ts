@@ -24,6 +24,7 @@ export * from "./constants/modality-nodes";
 export * from "./constants/task-status";
 export * from "./generated/abi/index";
 export * from "./logger";
+export * from "./media/fcpxml";
 export * from "./registry/feature-registry";
 export * from "./registry/feature-registry-schema";
 export * from "./registry/model-catalog";

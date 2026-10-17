@@ -1,0 +1,145 @@
+{
+    "status": "passed",
+    "realExistingAudio": true,
+    "checks": {
+        "repeatedExports": true,
+        "reopenedWorkflowExport": true,
+        "numberedSingleDownload": true,
+        "originalResultsPreserved": true,
+        "noGenerationRequests": true,
+        "missingSourceRejected": true,
+        "nativeDirectoryPicker": true,
+        "browserDirectoryWrites": true,
+        "verifiedCopiesAcrossThreeExports": 48
+    },
+    "files": [
+        {
+            "segment": 1,
+            "filename": "01.wav",
+            "bytes": 4400684,
+            "sourceSha256": "499be77d5d161b74b6ba839435e4a9b5ac6188deb5ea748d0714156163a1eebf",
+            "exportSha256": "499be77d5d161b74b6ba839435e4a9b5ac6188deb5ea748d0714156163a1eebf",
+            "fullDecode": true
+        },
+        {
+            "segment": 2,
+            "filename": "02.wav",
+            "bytes": 7288364,
+            "sourceSha256": "be8f485c3d401976c8de145e9002ab62a402ef4047b12af768bf6cb4d3af4e46",
+            "exportSha256": "be8f485c3d401976c8de145e9002ab62a402ef4047b12af768bf6cb4d3af4e46",
+            "fullDecode": true
+        },
+        {
+            "segment": 3,
+            "filename": "03.wav",
+            "bytes": 6973484,
+            "sourceSha256": "690d9a6662bdfbec3c10f787b49d3495f0089169f63d8a923ac416fa3d813b3b",
+            "exportSha256": "690d9a6662bdfbec3c10f787b49d3495f0089169f63d8a923ac416fa3d813b3b",
+            "fullDecode": true
+        },
+        {
+            "segment": 4,
+            "filename": "04.wav",
+            "bytes": 7749164,
+            "sourceSha256": "60ebbeb13a143f5e39f0d4f0e43c871f46f04b44fdf9045d790e03270c943235",
+            "exportSha256": "60ebbeb13a143f5e39f0d4f0e43c871f46f04b44fdf9045d790e03270c943235",
+            "fullDecode": true
+        },
+        {
+            "segment": 5,
+            "filename": "05.wav",
+            "bytes": 7741484,
+            "sourceSha256": "f1e71b48cea28303855641e9c9d83fd4c57d99233d356da23a1d8fdcc3d343fc",
+            "exportSha256": "f1e71b48cea28303855641e9c9d83fd4c57d99233d356da23a1d8fdcc3d343fc",
+            "fullDecode": true
+        },
+        {
+            "segment": 6,
+            "filename": "06.wav",
+            "bytes": 5982764,
+            "sourceSha256": "b92693827d93ccafd50098a2771a9b60dd31ef7d8663cc4de0f9786e9a389b82",
+            "exportSha256": "b92693827d93ccafd50098a2771a9b60dd31ef7d8663cc4de0f9786e9a389b82",
+            "fullDecode": true
+        },
+        {
+            "segment": 7,
+            "filename": "07.wav",
+            "bytes": 6912044,
+            "sourceSha256": "8dca118dd61ca2acc5309fe4011b0493b346301ebbd9a297ed2f4dd7c2c03ae9",
+            "exportSha256": "8dca118dd61ca2acc5309fe4011b0493b346301ebbd9a297ed2f4dd7c2c03ae9",
+            "fullDecode": true
+        },
+        {
+            "segment": 8,
+            "filename": "08.wav",
+            "bytes": 4677164,
+            "sourceSha256": "66b5f2d42a8be8ba770e3de92d622cb8f1e3a4afffc36108f7931628f6846bb1",
+            "exportSha256": "66b5f2d42a8be8ba770e3de92d622cb8f1e3a4afffc36108f7931628f6846bb1",
+            "fullDecode": true
+        },
+        {
+            "segment": 9,
+            "filename": "09.wav",
+            "bytes": 6336044,
+            "sourceSha256": "a8005a139f3879d7bcf2a58543851db8f24bea07ad0269b04ad941f32caecb8f",
+            "exportSha256": "a8005a139f3879d7bcf2a58543851db8f24bea07ad0269b04ad941f32caecb8f",
+            "fullDecode": true
+        },
+        {
+            "segment": 10,
+            "filename": "10.wav",
+            "bytes": 8002604,
+            "sourceSha256": "edc51e6e872f7534ca66c6a085e220c9779c2fed2e2a9978cd203d53335473b6",
+            "exportSha256": "edc51e6e872f7534ca66c6a085e220c9779c2fed2e2a9978cd203d53335473b6",
+            "fullDecode": true
+        },
+        {
+            "segment": 11,
+            "filename": "11.wav",
+            "bytes": 4807724,
+            "sourceSha256": "4b8ef7bec7c0ccf635c9b9027a3877f9ab593b03264706416929a821da14fd92",
+            "exportSha256": "4b8ef7bec7c0ccf635c9b9027a3877f9ab593b03264706416929a821da14fd92",
+            "fullDecode": true
+        },
+        {
+            "segment": 12,
+            "filename": "12.wav",
+            "bytes": 6382124,
+            "sourceSha256": "bd721dc7f5f6d6642e32cbfaa1bb30e9b5a5e0ebb1eb533f79d3e47f6ca3882a",
+            "exportSha256": "bd721dc7f5f6d6642e32cbfaa1bb30e9b5a5e0ebb1eb533f79d3e47f6ca3882a",
+            "fullDecode": true
+        },
+        {
+            "segment": 13,
+            "filename": "13.wav",
+            "bytes": 6689324,
+            "sourceSha256": "5f38b9f355ed03914ec27944c97a62017b1c014090b7a99f98ddaca5113e59c0",
+            "exportSha256": "5f38b9f355ed03914ec27944c97a62017b1c014090b7a99f98ddaca5113e59c0",
+            "fullDecode": true
+        },
+        {
+            "segment": 14,
+            "filename": "14.wav",
+            "bytes": 8248364,
+            "sourceSha256": "544e9ae6511995117eefb7bfc587a7446a8e42947d16e7143987e7a5c7c0fb33",
+            "exportSha256": "544e9ae6511995117eefb7bfc587a7446a8e42947d16e7143987e7a5c7c0fb33",
+            "fullDecode": true
+        },
+        {
+            "segment": 15,
+            "filename": "15.wav",
+            "bytes": 5775404,
+            "sourceSha256": "689fae782cc179a7d5346775bf27e66fa477551871df8bf84720c884a5372af2",
+            "exportSha256": "689fae782cc179a7d5346775bf27e66fa477551871df8bf84720c884a5372af2",
+            "fullDecode": true
+        },
+        {
+            "segment": 16,
+            "filename": "16.wav",
+            "bytes": 8033324,
+            "sourceSha256": "404997e4d4a6ded35d949c7da7c492312725a58d87f6ce077553ec8c1be60210",
+            "exportSha256": "404997e4d4a6ded35d949c7da7c492312725a58d87f6ce077553ec8c1be60210",
+            "fullDecode": true
+        }
+    ]
+}
