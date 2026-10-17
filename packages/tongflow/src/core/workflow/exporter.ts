@@ -10,6 +10,7 @@ import {
     abiSpecForNodeType,
 } from "../abi/node-feature-registry";
 import { type ResolvedSpec, resolveSpec } from "../abi/resolve";
+import { canAdoptDraft, segmentDraft } from "../abi/segment-draft";
 import { logger } from "../logger";
 import { getAbiOutputRoutesBySlot } from "../schema/tongflow-abi";
 import {
@@ -194,6 +195,24 @@ export class WorkflowExporter {
 
                 const nodeType = node.type ?? "unknown";
                 const _nodeData = (node.data as Record<string, unknown>) ?? {};
+
+                // A reviewed authoring draft is an immutable input for this run.
+                // Keep the original canvas graph for editing and traceability.
+                const draft =
+                    nodeType === "splitTextNode"
+                        ? segmentDraft(node.data)
+                        : undefined;
+                if (draft?.reviewed && canAdoptDraft(draft)) {
+                    dataNodes.push({
+                        id: node.id,
+                        type: "textNode",
+                        dataType: "text",
+                        isInput: false,
+                        staticData: { texts: [...draft.segments] },
+                        level: levelIndex,
+                    });
+                    continue;
+                }
 
                 // Process data node
                 if (isDataNode(nodeType)) {
@@ -670,6 +689,9 @@ export class WorkflowExporter {
             dependencies,
             level,
             rawConfig: this.extractRawConfig(nodeData),
+            ...(node.type === "splitTextNode" && segmentDraft(nodeData)
+                ? { reviewRequired: true }
+                : {}),
         };
     }
 

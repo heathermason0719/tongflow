@@ -942,3 +942,41 @@ def test_run_workflow_disk_mode_writes_files(tmp_path, monkeypatch):
     fk = result["outputs"][n1]["image"]["file_key"]
     assert fk.startswith("tasks/t1/")  # relative to file_key_base
     assert (tmp_path / "uploads" / fk).read_bytes() == b"IMG-cat"
+
+
+def test_unreviewed_draft_stops_before_model_invocation(tmp_path, monkeypatch):
+    abi_path = _write_abi(tmp_path)
+    plugins_dir, plugin_id, workflow, exec_id = _stub_plugin_and_workflow(tmp_path)
+    _patch_scan(monkeypatch, plugin_id)
+    workflow["executableNodes"][0]["reviewRequired"] = True
+    calls = []
+    result = run_workflow(workflow, plugins_dir=plugins_dir, data_dir=tmp_path / "data",
+                          abi_path=abi_path, auto_install=False,
+                          invoker=lambda *args: calls.append(args))
+    assert result["status"] == "failed"
+    assert "尚未采用" in result["errors"][0]
+    assert not calls
+
+
+def test_new_split_publishes_full_draft_then_stops_downstream(tmp_path, monkeypatch):
+    abi_path = _write_abi(tmp_path)
+    spec = json.loads(abi_path.read_text())
+    spec["nodes"].append({**spec["nodes"][0], "nodeSlot": "split-text"})
+    abi_path.write_text(json.dumps(spec))
+    plugins_dir, plugin_id, workflow, exec_id = _stub_plugin_and_workflow(tmp_path)
+    _patch_scan(monkeypatch, plugin_id)
+    workflow["executableNodes"][0]["feature"] = "split-text"
+    workflow["executableNodes"].append({**workflow["executableNodes"][0], "id": "downstream", "feature": "gen-text"})
+    workflow["executionLevels"] = [[exec_id], ["downstream"]]
+    calls, events = [], []
+    def invoke(plugin_id, slot, prompt, plugin_dir, model):
+        calls.append(slot)
+        return {"success": True, "text": "changed model proposal"}
+    result = run_workflow(workflow, plugins_dir=plugins_dir, data_dir=tmp_path / "data",
+                          abi_path=abi_path, auto_install=False, invoker=invoke, on_progress=events.append)
+    assert result["status"] == "failed"
+    assert calls == ["split-text"]
+    completed = next(e for e in events if e["type"] == "node_completed")
+    assert completed["output"]["text"] == "changed model proposal"
+    assert completed["splitSource"] == "hello"
+    assert "审阅" in result["errors"][0]

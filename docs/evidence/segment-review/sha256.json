@@ -1,0 +1,14 @@
+{
+    "03-full-differing-proposal-for-review.png": "4fb4ef956149def69822fe55567c7cc12025d17e3130a8e1004106e8c8b379db",
+    "03b-last-segment-and-adoption.png": "fc07eec2c61701e26817698f93506a2db0691deda89827984986b7be243ffba2",
+    "06-human-edits-boundaries-and-order.png": "7733e1839ee40984bae61cc3ea3f3564f8ad84c6a4831b00fe9627c0ac399d86",
+    "08-saved-and-reloaded.png": "5cb8d2b0b13b6ec95e480bbc6ea4e57506fe0cc4e06f38353d2ab9225e118697",
+    "09-reopened-workflow-engine-results.png": "26b8cfb2ed1a0f3fb43bf645300df04a5ffe5ad0db27ea3e513476e8abf0e4d4",
+    "10-unreviewed-workflow-stopped-before-tts.png": "276451525def7a796db41ae2f45b871bf1ad118eb8300178a48564b14ef69355",
+    "README.md": "b7b9061092da72ded73fe8b7d0585816d2a66cc07d40da92cf7d1c99f61bd7de",
+    "acceptance.json": "87ded85cca30b3aedc4f30c20d29696b00d0d23c7542bd4d4a9489582288006c",
+    "actual-task-requests.json": "cdf048d99630e6fd703c13bd2ab26b896a1a9f25f72f2447ab45de827f77771f",
+    "provider-requests.json": "c383fc301410659eccf3dfd99a1430071f152bb98fcb9a39e97ce7ea06c46e0b",
+    "regression-summary.json": "1028ed7cf91ab2929debc0e90714478faed48d96eb439f856481bfb996591b60",
+    "saved-workflow.json": "94ec823b8b712162d9621f4b2c69c3e65002892ef274a800282c21f507efeeca"
+}

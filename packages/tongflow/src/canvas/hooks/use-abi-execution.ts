@@ -368,7 +368,30 @@ export function useAbiExecution<F extends NodeSlot>(
                         }
                         payload[route.sourceField] = values;
                     }
-                    publishOutput(nodeId, payload, batch.signature);
+                    if (
+                        feature === "split-text" &&
+                        batch.outputs.size !== batch.prompts.length
+                    ) {
+                        const flow = useFlow.getState();
+                        const node = flow.nodes.find((n) => n.id === nodeId);
+                        if (node)
+                            flow.updates(
+                                nodeId,
+                                { ...node.data, outputPending: false },
+                                { history: false },
+                            );
+                        return;
+                    }
+                    publishOutput(
+                        nodeId,
+                        payload,
+                        batch.signature,
+                        feature === "split-text"
+                            ? batch.prompts
+                                  .map((p) => String(p.text ?? ""))
+                                  .join("")
+                            : undefined,
+                    );
                     useFlow.getState().autoLayout([nodeId], { history: false });
                 }
                 return;
@@ -382,7 +405,26 @@ export function useAbiExecution<F extends NodeSlot>(
                 const abiNode = getAbiNodeBySlot(feature);
                 const routes = abiNode ? resolveAbiOutputMappings(abiNode) : [];
                 if (routes.length > 0) {
-                    applyResolvedOutputRoutes(nodeId, payload, routes, expands);
+                    if (feature === "split-text" && payload) {
+                        const flow = useFlow.getState();
+                        const current = flow.nodes.find((n) => n.id === nodeId);
+                        const signature = current?.data.activeInputSignature;
+                        if (typeof signature !== "string") return;
+                        publishOutput(
+                            nodeId,
+                            payload,
+                            signature,
+                            typeof task.input?.text === "string"
+                                ? task.input.text
+                                : undefined,
+                        );
+                    } else
+                        applyResolvedOutputRoutes(
+                            nodeId,
+                            payload,
+                            routes,
+                            expands,
+                        );
                     // Tidy the affected component once the run's results have
                     // materialized. No history entry (result spawning has no
                     // undo of its own); a user drag cancels the settle watch.
@@ -516,6 +558,7 @@ export function useAbiExecution<F extends NodeSlot>(
                     {
                         ...current.data,
                         outputPending: true,
+                        activeInputSignature: signature,
                         ...(speechResults.length
                             ? { speechResults, speechInputSignature: signature }
                             : {}),

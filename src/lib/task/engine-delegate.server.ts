@@ -90,6 +90,7 @@ function handleEvent(taskId: string, ev: Record<string, unknown>): void {
                 {
                     output: ev.output,
                     speechResults: ev.speechResults,
+                    splitSource: ev.splitSource,
                     label: str(ev.label) ?? "",
                 },
                 nodeId,

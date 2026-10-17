@@ -154,3 +154,117 @@ describe("reusable speech inputs", () => {
         expect(nodes[2].data.texts).toEqual(["原文。"]);
     });
 });
+
+describe("reviewed segment authoring", () => {
+    const draft = {
+        source: "原稿。保留。",
+        proposal: ["模型改写。"],
+        segments: ["第二段。", "人工第一段。"],
+        reviewed: false,
+    };
+    const fixture = () => {
+        const nodes = [
+            node("source", "textNode", { texts: [draft.source] }),
+            node("split", "splitTextNode", {
+                feature: "split-text",
+                pluginId: "tongflow-api-openai",
+                segmentDraft: structuredClone(draft),
+                liveOutput: { texts: ["历史缓存"] },
+            }),
+            node("materialized", "textNode", {
+                texts: ["历史缓存"],
+                outputGeneration: { producerId: "split", signature: "old" },
+            }),
+            node("clone", "textGenSpeechCloneNode", {
+                ref_audio: "reference.wav",
+            }),
+        ];
+        const edges = [
+            edge("source", "split", "text"),
+            { ...edge("split", "clone", "text"), sourceHandle: "out:texts" },
+            edge("split", "materialized", "textNode"),
+        ];
+        const spec = resolvedSpecForNodeType("textGenSpeechCloneNode")!;
+        const read = () =>
+            buildPrompts({
+                spec,
+                configValues: nodes[3].data,
+                handleValues: collectHandleValues("clone", spec, nodes, edges),
+            });
+        return { nodes, edges, read };
+    };
+    it("withholds differing proposals and uses adopted current order instead of cached output", () => {
+        const { nodes, edges, read } = fixture();
+        expect(read()).toEqual([]);
+        const pending = exportWorkflow(nodes, edges);
+        expect(
+            pending.executableNodes.find((n) => n.id === "split")
+                ?.reviewRequired,
+        ).toBe(true);
+        const state = nodes[1].data.segmentDraft as typeof draft;
+        state.reviewed = true;
+        expect(read().map((p) => p.text)).toEqual(draft.segments);
+        const signature = inputSignature("clone", nodes, edges);
+        state.segments.reverse();
+        state.reviewed = false;
+        expect(read()).toEqual([]);
+        expect(inputSignature("clone", nodes, edges)).not.toBe(signature);
+        state.reviewed = true;
+        nodes[0].data.texts = ["新的原稿不覆盖人工稿。"];
+        expect(read().map((p) => p.text)).toEqual(state.segments);
+        expect(state.source).toBe(draft.source);
+    });
+    it("reads materialized siblings once in draft order, including new paragraphs", () => {
+        const { nodes } = fixture();
+        const state = nodes[1].data.segmentDraft as typeof draft;
+        state.reviewed = true;
+        state.segments.push("新增的第三段。");
+        nodes.push(node("sibling", "textNode", { texts: ["旧的第二段"] }));
+        const connections = [
+            edge("source", "split", "text"),
+            edge("split", "materialized", "textNode"),
+            edge("split", "sibling", "textNode"),
+            edge("sibling", "clone", "text"),
+            edge("materialized", "clone", "text"),
+        ];
+        const spec = resolvedSpecForNodeType("textGenSpeechCloneNode")!;
+        const prompts = buildPrompts({
+            spec,
+            configValues: nodes[3].data,
+            handleValues: collectHandleValues(
+                "clone",
+                spec,
+                nodes,
+                connections,
+            ),
+        });
+        expect(prompts.map((p) => p.text)).toEqual(state.segments);
+        state.reviewed = false;
+        expect(
+            collectHandleValues("clone", spec, nodes, connections).text,
+        ).toEqual([]);
+    });
+    it("exports adopted drafts as static inputs through direct or materialized edges", () => {
+        const { nodes, edges } = fixture();
+        (nodes[1].data.segmentDraft as typeof draft).reviewed = true;
+        for (const source of ["split", "materialized"]) {
+            const graph = edges.map((e) =>
+                e.target === "clone" ? { ...e, source } : e,
+            );
+            const exported = exportWorkflow(nodes, graph);
+            expect(exported.executableNodes.map((n) => n.id)).not.toContain(
+                "split",
+            );
+            expect(
+                exported.dataNodes.find((n) => n.id === "split")?.staticData
+                    ?.texts,
+            ).toEqual(draft.segments);
+            expect(
+                exported.executableNodes.find((n) => n.id === "clone")?.bindings
+                    .text,
+            ).toMatchObject({
+                sources: [{ fromNodeId: "split", fromField: "texts" }],
+            });
+        }
+    });
+});

@@ -23,6 +23,7 @@ import {
     targetHandleId,
 } from "./handle-introspect";
 import { isOutputCurrent } from "./input-lineage";
+import { segmentDraft } from "./segment-draft";
 import type { FieldSourceOverride, HandleOverride } from "./sources";
 
 /* ------------------------------------------------------------------ */
@@ -220,8 +221,24 @@ export function collectHandleValues(
             ? nodes
             : new Map(nodes.map((n) => [n.id, n] as const));
     const allNodes = Array.from(lookup.values());
+    // Materialized split siblings are previews of one authoring channel. Read
+    // that channel once, including newly added/reordered segments, just as the
+    // exported engine plan does. Explicit standalone manual overrides stay local.
+    const draftSource = (src: Node) => {
+        if (src.type === "splitTextNode" && segmentDraft(src.data)) return src;
+        if (src.type !== "textNode" || src.data.manualTextOverride === true)
+            return undefined;
+        return edges
+            .filter((e) => e.target === src.id)
+            .map((e) => lookup.get(e.source))
+            .find((n) => n?.type === "splitTextNode" && segmentDraft(n.data));
+    };
     const readSource = (src: Node, path: string, edge: Edge) => {
         if (!isOutputCurrent(src, allNodes, edges)) return undefined;
+        const producer = draftSource(src);
+        const draft = producer && segmentDraft(producer.data);
+        if (draft)
+            return path.endsWith("[0]") ? draft.segments[0] : draft.segments;
         const output = src.data.liveOutput as
             | Record<string, unknown>
             | undefined;
@@ -240,11 +257,17 @@ export function collectHandleValues(
         if (resolved.batch || resolved.collect) {
             // Collect from every matching edge into a flat array.
             const values: unknown[] = [];
+            const seenDrafts = new Set<string>();
             for (const edge of edges) {
                 if (edge.target !== targetNodeId) continue;
                 if (parseTargetHandleId(edge.targetHandle) !== field) continue;
                 const src = lookup.get(edge.source);
                 if (!src) continue;
+                const producer = draftSource(src);
+                if (producer) {
+                    if (seenDrafts.has(producer.id)) continue;
+                    seenDrafts.add(producer.id);
+                }
                 const v = readSource(src, resolved.path, edge);
                 if (v === undefined || v === null) continue;
                 if (Array.isArray(v)) values.push(...v);

@@ -23,7 +23,10 @@ OpenAI 插件 `fix/local-document-extraction`。使用本轮最终版本时须�
 
 文案到多段复刻配音的后续开发分支为主仓库 `feat/reusable-voice-workflow`、
 OpenAI 插件 `feat/speech-safe-splitting`，均以上述维护分支为基线。
-使用方法和验证边界见[完整文案到复刻配音](script-to-cloned-speech.zh.md)。
+这两个分支继续包含分段工作稿审阅编辑闭环：主仓库负责原稿／建议／人工稿持久化、
+采用门槛和执行计划；插件负责完整返回可能有差异的建议。须配套更新两个仓库，
+只更新插件会失去主程序的人工审阅门槛。使用方法和验证边界见
+[完整文案到复刻配音](script-to-cloned-speech.zh.md)。
 
 主仓库保存兼容 Key 的完整提取、模型 ID 编辑及提交逻辑、多语言说明和回归测试。
 插件仓库保存兼容端点直接使用指定模型的修复、配置说明与两项离线回归。

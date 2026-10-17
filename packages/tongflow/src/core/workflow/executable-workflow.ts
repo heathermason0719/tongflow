@@ -110,6 +110,8 @@ export interface ExecutableNode {
     dependencies: string[];
     /** Execution level (used to determine parallel execution groups) */
     level: number;
+    /** Existing draft awaits adoption; stop before invoking any model. */
+    reviewRequired?: boolean;
     /** Raw node configuration data (used for UI restoration) */
     rawConfig?: Record<string, unknown>;
 }

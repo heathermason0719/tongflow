@@ -1,5 +1,6 @@
 import type { Edge, Node } from "@xyflow/react";
 import { resolvedSpecForNodeType } from "./node-feature-registry";
+import { canAdoptDraft, segmentDraft } from "./segment-draft";
 
 // Bounded, non-security fingerprint. Storing whole ancestor texts on every
 // segment would exhaust browser storage on long documents. Two independent
@@ -37,6 +38,7 @@ export function inputSignature(
     return fingerprint(
         JSON.stringify([
             node.type,
+            segmentDraft(node.data),
             config,
             node.data.pluginId,
             node.data.pluginModel,
@@ -74,11 +76,44 @@ export function isOutputCurrent(
     nodes: ReadonlyArray<Node>,
     edges: ReadonlyArray<Edge>,
 ): boolean {
+    const draftParent =
+        node.type === "textNode"
+            ? edges
+                  .filter((e) => e.target === node.id)
+                  .map((e) => nodes.find((n) => n.id === e.source))
+                  .find(
+                      (n) =>
+                          n?.type === "splitTextNode" && segmentDraft(n.data),
+                  )
+            : undefined;
+    const parentDraft = draftParent && segmentDraft(draftParent.data);
+    if (parentDraft)
+        return (
+            parentDraft.reviewed &&
+            canAdoptDraft(parentDraft) &&
+            draftParent.data.outputPending !== true
+        );
     if (node.data.manualTextOverride === true) return true;
+    const ownDraft = node.type === "splitTextNode" && segmentDraft(node.data);
+    if (ownDraft)
+        return (
+            ownDraft.reviewed &&
+            canAdoptDraft(ownDraft) &&
+            node.data.outputPending !== true
+        );
     const generation = node.data.outputGeneration as
         | OutputGeneration
         | undefined;
     if (generation) {
+        const producer = nodes.find((n) => n.id === generation.producerId);
+        const draft =
+            producer?.type === "splitTextNode" && segmentDraft(producer.data);
+        if (draft)
+            return (
+                draft.reviewed &&
+                canAdoptDraft(draft) &&
+                producer?.data.outputPending !== true
+            );
         if (
             nodes.find((n) => n.id === generation.producerId)?.data
                 .outputPending

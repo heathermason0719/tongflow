@@ -218,6 +218,12 @@ async function task(nodeId, label, feature) {
         taskId,
     );
     assert.equal(row.status, "completed", row.error);
+    if (feature === "split-text") {
+        await page.waitForSelector(
+            `[data-id="${nodeId}"] [data-testid="segment-draft"]`,
+        );
+        await clickButton(nodeId, "采用当前稿件");
+    }
     await page.waitForFunction(
         (id) =>
             JSON.parse(localStorage.getItem("edges") || "[]").some(
@@ -636,12 +642,13 @@ try {
             );
             write("long-engine-workflow.json", { executable, ...engine });
             const done = engine.events.find(
-                (event) => event.status === "WORKFLOW_COMPLETED",
+                (event) => event.status === "WORKFLOW_FAILED",
             );
             assert.ok(
                 done,
-                "Long workflow engine did not complete successfully",
+                "Long workflow must publish the draft and stop for human review",
             );
+            assert.ok(JSON.stringify(done.data.errors).includes("审阅"));
             assert.equal(
                 sha(Buffer.from(done.data.outputs["engine-parse"].text)),
                 sha(Buffer.from(expected)),
@@ -659,6 +666,7 @@ try {
                 taskId: engine.taskId,
                 exactExtractedTextMatch: true,
                 splitCoverageMatch: true,
+                stoppedForReviewAfterPublishingDraft: true,
             };
         }
         records.documents.push({

@@ -12,6 +12,7 @@ export * from "./abi/input-lineage";
 export * from "./abi/node-actions";
 export * from "./abi/node-feature-registry";
 export * from "./abi/resolve";
+export * from "./abi/segment-draft";
 export * from "./abi/sources";
 export * from "./agent/graph-tools";
 export * from "./agent/serialize";

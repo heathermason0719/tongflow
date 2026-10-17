@@ -1,0 +1,274 @@
+[
+    {
+        "feature": "parse-document",
+        "pluginId": "tongflow-api-openai",
+        "prompt": {
+            "document": "Wm87_n4eg9jYUN1G929Vt.txt"
+        },
+        "nodeId": "parse"
+    },
+    {
+        "feature": "split-text",
+        "pluginId": "tongflow-api-openai",
+        "params": {
+            "target_seconds": 25,
+            "max_segment_chars": 180
+        },
+        "prompt": {
+            "text": "第1站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第2站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第3站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第4站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第5站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第6站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第7站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第8站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第9站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n"
+        },
+        "nodeId": "split"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "第一站（模型改写），河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第2站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "第3站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第4站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第5站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "第6站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第7站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第8站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "第9站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "大家一起听河流的声音。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第2站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "人工修改的开头：今天改在傍晚集合。",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "第3站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第4站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第5站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "第6站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第7站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第8站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    },
+    {
+        "feature": "text-gen-speech-clone",
+        "pluginId": "tongflow-api-qwen-audio",
+        "prompt": {
+            "text": "人工新增的结尾：下次见。 ",
+            "ref_audio": "eB8Qa5jKmAtSJxRSjUzSj.wav"
+        },
+        "nodeId": "clone"
+    }
+]

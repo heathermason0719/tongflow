@@ -2,13 +2,13 @@ import { useNodeId } from "@xyflow/react";
 import { Scissors } from "lucide-react";
 import { memo } from "react";
 import { useTranslations } from "use-intl";
-import type { TongflowPluginNodeProps } from "../../../core";
+import { segmentDraft, type TongflowPluginNodeProps } from "../../../core";
 import { useAbiForm } from "../../hooks/use-abi-form";
 import { useEffectiveInputs } from "../../hooks/use-effective-inputs";
 import useFlow from "../../hooks/use-flow";
-
 import { AbiNodeShell } from "../base/abi-node-shell";
 import { NodeTextarea } from "../base/node-textarea";
+import { SegmentDraftEditor } from "./segment-draft-editor";
 
 const SplitTextNode = ({
     selected,
@@ -20,6 +20,7 @@ const SplitTextNode = ({
     const input = useEffectiveInputs("split-text", form.state);
     const nodeId = useNodeId();
     const params = data.pluginParams ?? {};
+    const draft = segmentDraft(data);
     const patchParams = (patch: Record<string, unknown>) => {
         const flow = useFlow.getState();
         const node = flow.nodes.find((n) => n.id === nodeId);
@@ -49,6 +50,12 @@ const SplitTextNode = ({
             }
         >
             <div className="p-4 space-y-4">
+                {draft && (
+                    <SegmentDraftEditor
+                        draft={draft}
+                        pending={data.outputPending === true}
+                    />
+                )}
                 <p className="text-xs text-muted-foreground">
                     {t("speechFlow.splitHint")}
                 </p>

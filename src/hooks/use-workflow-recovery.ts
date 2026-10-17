@@ -124,6 +124,10 @@ export function useWorkflowRecovery(options: UseWorkflowRecoveryOptions = {}) {
                                     message.nodeId,
                                     output,
                                     signature,
+                                    typeof message.data?.splitSource ===
+                                        "string"
+                                        ? message.data.splitSource
+                                        : undefined,
                                 );
                                 const current = useFlow
                                     .getState()
@@ -154,6 +158,17 @@ export function useWorkflowRecovery(options: UseWorkflowRecoveryOptions = {}) {
 
                 case NodeStatus.NODE_FAILED:
                     if (message.nodeId) {
+                        const flow = useFlow.getState();
+                        const node = flow.nodes.find(
+                            (n) => n.id === message.nodeId,
+                        );
+                        if (node)
+                            flow.updates(
+                                node.id,
+                                { ...node.data, outputPending: false },
+                                { history: false },
+                            );
+
                         setNodeExecutionStatus(message.nodeId, "failed");
                         onNodeStatusChange?.(message.nodeId, "failed");
                     }

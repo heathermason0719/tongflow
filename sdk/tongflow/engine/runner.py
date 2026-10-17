@@ -340,6 +340,8 @@ def run_workflow(
                 }
             )
             try:
+                if node.get("reviewRequired"):
+                    raise RuntimeError("分段工作稿尚未采用。请审阅并采用当前稿件后继续配音。")
                 if not plugin_id:
                     raise RuntimeError(
                         f"Missing pluginId for nodeSlot={slot}. Select a plugin in the node UI."
@@ -445,6 +447,7 @@ def run_workflow(
                         "type": "node_completed",
                         "nodeId": node_id,
                         "output": result,
+                        **({"splitSource": "".join(str(p.get("text") or "") for p in param_sets)} if slot == "split-text" else {}),
                         **({"speechResults": [
                             {"text": str(p.get("text") or ""),
                              "refAudio": str(p.get("ref_audio") or ""),
@@ -455,6 +458,10 @@ def run_workflow(
                         "label": label,
                     }
                 )
+                if slot == "split-text":
+                    # Publish the full proposal first, then stop before downstream
+                    # generation. The next run uses the explicitly adopted draft.
+                    raise RuntimeError("分段工作稿已生成，请审阅并采用当前稿件后继续配音。")
             except Exception as e:  # noqa: BLE001 - aggregate per-node failure
                 msg = str(e)
                 error_summaries.append(f"Node {node_id} failed: {msg}")

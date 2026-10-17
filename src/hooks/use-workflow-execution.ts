@@ -147,7 +147,11 @@ export function useWorkflowExecution(
     // existing downstream data node (or spawn one if absent).
     const expands = useFlow((s) => s.expands);
     const applyNodeOutput = useCallback(
-        (sourceNodeId: string, output: Record<string, unknown> | undefined) => {
+        (
+            sourceNodeId: string,
+            output: Record<string, unknown> | undefined,
+            splitSource?: string,
+        ) => {
             if (!output) return;
             const currentNodes = nodesRef.current;
             const currentNode = currentNodes.find((n) => n.id === sourceNodeId);
@@ -164,7 +168,7 @@ export function useWorkflowExecution(
             if (routes.length === 0) return;
             const signature = runInputSignatures.current.get(sourceNodeId);
             if (!signature) return;
-            publishOutput(sourceNodeId, output, signature);
+            publishOutput(sourceNodeId, output, signature, splitSource);
             runTouchedRef.current.add(sourceNodeId);
         },
         [expands],
@@ -301,6 +305,10 @@ export function useWorkflowExecution(
                                         applyNodeOutput(
                                             message.nodeId,
                                             output as Record<string, unknown>,
+                                            typeof message.data?.splitSource ===
+                                                "string"
+                                                ? message.data.splitSource
+                                                : undefined,
                                         );
                                     }
                                     if (
@@ -333,6 +341,20 @@ export function useWorkflowExecution(
 
                             case NodeStatus.NODE_FAILED:
                                 if (message.nodeId) {
+                                    const flow = useFlow.getState();
+                                    const node = flow.nodes.find(
+                                        (n) => n.id === message.nodeId,
+                                    );
+                                    if (node)
+                                        flow.updates(
+                                            node.id,
+                                            {
+                                                ...node.data,
+                                                outputPending: false,
+                                            },
+                                            { history: false },
+                                        );
+
                                     setNodeExecutionStatus(
                                         message.nodeId,
                                         "failed",

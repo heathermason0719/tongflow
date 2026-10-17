@@ -26,6 +26,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
 const write = (name, data) =>
     fs.writeFileSync(path.join(output, name), JSON.stringify(data, null, 2));
 const calls = [];
+const taskRequests = [];
 const records = {
     provider: "local simulation; NOT real Bailian generation",
     output,
@@ -74,8 +75,11 @@ const mock = http.createServer(async (req, res) => {
         if (req.url === "/v1/chat/completions") {
             const content = body.messages.at(-1).content;
             const source = content.slice(content.indexOf("TEXT:\n") + 6);
-            // Deliberately overlong model segments exercise deterministic length
-            // enforcement and exact whitespace restoration in the real plugin.
+            // Deliberate model rewrite and omission must remain reviewable.
+            const proposal = source
+                .replace("第1站", "第一站（模型改写）")
+                .replace("小林想了想，写下了昨天帮助邻居找回雨伞的经过。", "")
+                .trim();
             calls.push({
                 kind: "split",
                 model: body.model,
@@ -86,7 +90,7 @@ const mock = http.createServer(async (req, res) => {
                 choices: [
                     {
                         message: {
-                            content: JSON.stringify({ texts: [source.trim()] }),
+                            content: JSON.stringify({ texts: [proposal] }),
                         },
                     },
                 ],
@@ -379,6 +383,8 @@ try {
     await page.setRequestInterception(true);
     page.on("request", (req) => {
         const url = new URL(req.url());
+        if (url.pathname === "/api/task/create" && req.method() === "POST")
+            taskRequests.push(JSON.parse(req.postData()));
         if (
             ["http:", "https:"].includes(url.protocol) &&
             !["127.0.0.1", "localhost"].includes(url.hostname)
@@ -516,15 +522,86 @@ try {
     const segments = g.nodes.find((n) => n.id === "split").data.liveOutput
         .texts;
     assert.ok(segments.length >= 3);
-    assert.equal(segments.join(""), source);
+    assert.notEqual(segments.join(""), source);
+    assert.equal(
+        g.nodes.find((n) => n.id === "split").data.segmentDraft.source,
+        source,
+    );
+    assert.equal(
+        g.nodes.find((n) => n.id === "split").data.segmentDraft.reviewed,
+        false,
+    );
+    assert.equal(await page.$('[data-testid="effective-speech-text"]'), null);
+    const beforeReview = calls.length;
+    await button("split", "审阅与编辑");
+    await page.waitForSelector('[data-testid="draft-editor"]');
+    assert.equal(
+        await page.$eval(
+            '[data-testid="draft-original"]',
+            (el) => el.textContent,
+        ),
+        source,
+    );
+    assert.ok(
+        (
+            await page.$eval(
+                '[data-testid="model-difference"]',
+                (el) => el.textContent,
+            )
+        ).includes("模型改写"),
+    );
+    const visibleProposal = await page.$$eval(
+        '[data-testid="draft-segment"] textarea',
+        (els) => els.map((el) => el.value),
+    );
+    assert.deepEqual(visibleProposal, segments);
+    await pause(350);
+    await page.screenshot({
+        path: path.join(shots, "03-full-differing-proposal-for-review.png"),
+    });
+    await (await page.$$('[data-testid="draft-segment"]'))
+        .at(-1)
+        .scrollIntoView();
+    await pause(250);
+    await page.screenshot({
+        path: path.join(shots, "03b-last-segment-and-adoption.png"),
+    });
+    await clickText("完成编辑", '[data-testid="draft-editor"]');
+    // The normal speech action is disabled; no task or provider call is emitted.
+    assert.equal(
+        await page.$eval(
+            selector("clone"),
+            (el) =>
+                [...el.querySelectorAll("button")].find(
+                    (b) => b.textContent.trim() === "生成语音",
+                )?.disabled,
+        ),
+        true,
+    );
+    await page.$eval(selector("clone"), (el) =>
+        [...el.querySelectorAll("button")]
+            .find((b) => b.textContent.trim() === "生成语音")
+            .click(),
+    );
+
+    await pause(500);
+    assert.equal(calls.length, beforeReview);
+    records.checks.unreviewedBlocked = {
+        completeProposalVisible: true,
+        originalRetained: true,
+        modelDiffVisible: true,
+        noSpeechRequests: true,
+    };
+    await button("split", "采用当前稿件");
     assert.ok(segments.every((s) => Array.from(s).length <= 180));
     records.checks.split = {
         taskId: splitTask.id,
         source,
         segments,
-        exact: true,
+        deliberatelyDifferent: true,
         chars: segments.map((s) => Array.from(s).length),
     };
+    await fitCanvas();
     await connect("voice", "out:audioNode", "clone", "in:ref_audio");
     await page.waitForFunction(() =>
         document
@@ -539,11 +616,11 @@ try {
     const refEdge = g.edges.find(
         (e) => e.source === "voice" && e.target === "clone",
     );
-    const sourceUpdater = await page.$(
-        `.react-flow__edge[data-id="${refEdge.id}"] .react-flow__edgeupdater-source`,
+    const targetUpdater = await page.$(
+        `.react-flow__edge[data-id="${refEdge.id}"] .react-flow__edgeupdater-target`,
     );
-    assert.ok(sourceUpdater, "Edge reconnect source must exist");
-    const updaterBox = await sourceUpdater.boundingBox();
+    assert.ok(targetUpdater, "Edge reconnect target must exist");
+    const updaterBox = await targetUpdater.boundingBox();
     await page.mouse.move(
         updaterBox.x + updaterBox.width / 2,
         updaterBox.y + updaterBox.height / 2,
@@ -563,11 +640,13 @@ try {
     );
     await shot("04-reference-disconnected");
     assert.ok(await page.$eval(`${selector("clone")} button`, () => true));
+    await fitCanvas();
     await connect("voice", "out:audioNode", "clone", "in:ref_audio");
     records.checks.disconnectedAndReconnectedByMouse = true;
 
     console.log("Batch speech and downloads");
     const before = calls.filter((c) => c.kind === "tts").length;
+    const firstTaskCount = taskRequests.length;
     await button("clone", "生成语音");
     await page.waitForFunction(
         (count) => {
@@ -591,6 +670,13 @@ try {
         segments,
     );
     const ttsCalls = calls.filter((c) => c.kind === "tts").slice(before);
+    assert.deepEqual(
+        taskRequests
+            .slice(firstTaskCount)
+            .filter((r) => r.feature === "text-gen-speech-clone")
+            .map((r) => r.prompt.text),
+        segments,
+    );
     assert.equal(ttsCalls.length, segments.length);
     for (const segment of segments)
         assert.ok(ttsCalls.some((c) => c.text_prompt.includes(segment.trim())));
@@ -681,40 +767,88 @@ try {
     );
     records.checks.downloadedAllSegments = downloadedHashes;
 
-    // Edit the actual upstream text inspector. Old split output must go stale.
-    console.log("Editing upstream and rerunning");
-    const updated = `修改后的开头：这次活动从傍晚开始。\n\n${source.slice(0, 330)}`;
-    const inspect = await page.$(
-        `${selector("text")} button[title="全屏预览"]`,
-    );
-    assert.ok(inspect);
-    await inspect.click();
-    await page.waitForSelector("textarea");
-    const editor = await page.$("body > div.fixed textarea");
-    assert.ok(editor);
-    await editor.evaluate((el) => {
+    console.log("Editing the complete segment draft in the real browser");
+    await fitCanvas();
+    await button("split", "审阅与编辑");
+    const draftScope = '[data-testid="draft-editor"]';
+    const firstEditor = await page.$(`${draftScope} textarea`);
+    const editedFirst =
+        "人工修改的开头：今天改在傍晚集合。需要删除的测试句。大家一起听河流的声音。";
+    await firstEditor.evaluate((el) => {
         el.focus();
         el.select();
     });
     await page.keyboard.press("Backspace");
-    await editor.type(updated);
-    assert.equal(await editor.evaluate((el) => el.value), updated);
-    await page.click("body > div.fixed button");
-    await pause(700);
-    await page.waitForFunction(
-        () => !document.querySelector('[data-testid="effective-speech-text"]'),
+    await firstEditor.type(editedFirst);
+    // Delete one complete sentence through the text editor.
+    await firstEditor.evaluate((el) => {
+        const text = "需要删除的测试句。";
+        const i = el.value.indexOf(text);
+        el.focus();
+        el.setSelectionRange(i, i + text.length);
+    });
+    await page.keyboard.press("Backspace");
+    const edited = editedFirst.replace("需要删除的测试句。", "");
+    assert.equal(await firstEditor.evaluate((el) => el.value), edited);
+    // Merge a boundary, then split at the chosen cursor to establish a new one.
+    await clickText(
+        "合并下一段",
+        `${draftScope} [data-testid="draft-segment"]`,
     );
-    await shot("06-upstream-edited-stale-input-rejected");
-    const editedSplit = await task("split", "执行");
-    g = await graph();
-    const updatedSegments = g.nodes.find((n) => n.id === "split").data
-        .liveOutput.texts;
-    assert.equal(updatedSegments.join(""), updated);
+    const merged = await page.$(`${draftScope} textarea`);
+    await merged.evaluate((el, position) => {
+        el.focus();
+        el.setSelectionRange(position, position);
+    }, edited.indexOf("大家"));
+    await clickText(
+        "在光标处分段",
+        `${draftScope} [data-testid="draft-segment"]`,
+    );
+    await clickText("下移", `${draftScope} [data-testid="draft-segment"]`);
+    const rows = await page.$$(`${draftScope} [data-testid="draft-segment"]`);
+    await rows
+        .at(-1)
+        .$("button::-p-text(删除本段)")
+        .then((b) => b.click());
+    await clickText("新增段落", draftScope);
+    const editors = await page.$$(`${draftScope} textarea`);
+    await editors.at(-1).type("人工新增的结尾：下次见。 ");
+    let updatedSegments = await page.$$eval(`${draftScope} textarea`, (els) =>
+        els.map((el) => el.value),
+    );
+    assert.ok(updatedSegments.some((s) => s.includes("人工修改")));
+    assert.ok(updatedSegments.every((s) => !s.includes("需要删除的测试句")));
+    assert.ok(updatedSegments.at(-1).includes("人工新增"));
+    assert.equal(updatedSegments[1], edited.slice(0, edited.indexOf("大家")));
+    await pause(700);
+    assert.equal(
+        (await graph()).nodes.find((n) => n.id === "split").data.segmentDraft
+            .reviewed,
+        false,
+    );
+    await page.screenshot({
+        path: path.join(shots, "06-human-edits-boundaries-and-order.png"),
+    });
+    assert.ok(
+        (
+            await page.$eval(
+                '[data-testid="speech-results"]',
+                (el) => el.textContent,
+            )
+        ).includes("历史配音"),
+    );
+    records.checks.editsInvalidateReviewAndAudio = true;
+    await clickText("采用当前稿件", draftScope);
+    await clickText("完成编辑", draftScope);
+    await pause(700);
     const preview = await page.$$eval(
         '[data-testid="effective-speech-text"]',
         (els) => els.map((e) => e.childNodes[1].textContent),
     );
     assert.deepEqual(preview, updatedSegments);
+    const updated = source;
+    const editedSplit = { id: "not-rerun; current draft edited directly" };
+    const secondTaskCount = taskRequests.length;
     const priorCount = calls.filter((c) => c.kind === "tts").length;
     await button("clone", "生成语音");
     await page.waitForFunction(
@@ -737,6 +871,13 @@ try {
         .filter((c) => c.kind === "tts")
         .slice(priorCount);
     assert.equal(updatedCalls.length, updatedSegments.length);
+    assert.deepEqual(
+        taskRequests
+            .slice(secondTaskCount)
+            .filter((r) => r.feature === "text-gen-speech-clone")
+            .map((r) => r.prompt.text),
+        updatedSegments,
+    );
     assert.ok(
         updatedSegments.every((s) =>
             updatedCalls.some((c) => c.text_prompt.includes(s.trim())),
@@ -803,47 +944,120 @@ try {
             .data.speechResults.map((r) => r.text),
         updatedSegments,
     );
-    records.checks.reopenedFromDatabase = true;
+    const reopenedDraft = g.nodes.find((n) => n.id === "split").data
+        .segmentDraft;
+    assert.deepEqual(reopenedDraft.segments, updatedSegments);
+    assert.equal(reopenedDraft.source, source);
+    assert.equal(reopenedDraft.reviewed, true);
+    records.checks.reopenedFromDatabase = { draft: reopenedDraft, exact: true };
+    // Reopen, edit again and rerun without another LLM call.
+    await fitCanvas();
+    await button("split", "审阅与编辑");
+    const reopenedEditor = await page.$(
+        '[data-testid="draft-editor"] textarea',
+    );
+    const reopenValue = await reopenedEditor.evaluate((el) => el.value);
+    await reopenedEditor.evaluate((el) => {
+        el.focus();
+        el.setSelectionRange(5, 5);
+    });
+    await reopenedEditor.type("再次打开后补充。");
+    assert.equal(
+        await reopenedEditor.evaluate((el) => el.value),
+        `${reopenValue.slice(0, 5)}再次打开后补充。${reopenValue.slice(5)}`,
+    );
+    updatedSegments = await page.$$eval(
+        '[data-testid="draft-editor"] textarea',
+        (els) => els.map((el) => el.value),
+    );
+    await clickText("完成编辑", '[data-testid="draft-editor"]');
+    const splitCountBeforeEngine = calls.filter(
+        (c) => c.kind === "split",
+    ).length;
+    const engineCallStart = calls.length;
 
     // Execute from the real mode switch and confirmation dialog. This exercises
     // the app exporter, Python engine, and canvas SSE publisher together.
     console.log("Executing reopened workflow from the UI");
+    await page.waitForSelector('[data-testid="draft-editor"]', {
+        hidden: true,
+    });
     const modeButtons = await page.$$("button[aria-pressed]");
     await modeButtons[1].click();
-    const play = await page.waitForSelector(
-        "button:not([aria-pressed]):has(svg.lucide-play):not(.react-flow__node button)",
-    );
-    await play.click();
-    await page.waitForSelector('[role="dialog"]');
-    const executionResponse = page.waitForResponse(
-        (r) =>
-            r.url().endsWith("/api/workflow/execute") &&
-            r.request().method() === "POST",
-    );
-    await clickText("确认执行", '[role="dialog"]');
-    const execution = await executionResponse;
-    assert.equal(execution.status(), 200);
-    const { taskId: engineId } = await execution.json();
     await page.waitForFunction(
-        async (id) => {
-            const { tasks } = await (
-                await fetch("/api/task/list?limit=200")
-            ).json();
-            return tasks.some(
-                (t) =>
-                    t.id === id && ["completed", "failed"].includes(t.status),
-            );
-        },
-        { polling: 250, timeout: 90000 },
-        engineId,
+        () =>
+            [
+                ...document.querySelectorAll("button[aria-pressed]"),
+            ][1]?.getAttribute("aria-pressed") === "true",
     );
-    const engineTask = await page.evaluate(
-        async (id) =>
-            (await (await fetch("/api/task/list?limit=200")).json()).tasks.find(
-                (t) => t.id === id,
-            ),
-        engineId,
+    async function runWorkflowFromUi() {
+        const play = await page.waitForSelector(
+            "button:not([aria-pressed]):has(svg.lucide-play):not(.react-flow__node button)",
+        );
+        await play.click();
+        await page.waitForSelector('[role="dialog"]');
+        const executionResponse = page.waitForResponse(
+            (r) =>
+                r.url().endsWith("/api/workflow/execute") &&
+                r.request().method() === "POST",
+        );
+        await clickText("确认执行", '[role="dialog"]');
+        const execution = await executionResponse;
+        assert.equal(execution.status(), 200);
+        const { taskId: engineId } = await execution.json();
+        await page.waitForFunction(
+            async (id) => {
+                const { tasks } = await (
+                    await fetch("/api/task/list?limit=200")
+                ).json();
+                return tasks.some(
+                    (t) =>
+                        t.id === id &&
+                        ["completed", "failed"].includes(t.status),
+                );
+            },
+            { polling: 250, timeout: 90000 },
+            engineId,
+        );
+        const engineTask = await page.evaluate(
+            async (id) =>
+                (
+                    await (await fetch("/api/task/list?limit=200")).json()
+                ).tasks.find((t) => t.id === id),
+            engineId,
+        );
+        return { engineId, engineTask };
+    }
+    const blocked = await runWorkflowFromUi();
+    assert.equal(blocked.engineTask.status, "failed");
+    assert.ok(JSON.stringify(blocked.engineTask.error).includes("尚未采用"));
+    await pause(1000);
+    assert.equal(calls.length, engineCallStart);
+    g = await graph();
+    assert.deepEqual(
+        g.nodes.find((n) => n.id === "split").data.segmentDraft.segments,
+        updatedSegments,
     );
+    assert.equal(
+        g.nodes.find((n) => n.id === "split").data.outputPending,
+        false,
+    );
+    records.checks.workflowReviewGate = {
+        taskId: blocked.engineId,
+        status: "failed with review prompt",
+        providerCalls: 0,
+        draftPreserved: true,
+        error: blocked.engineTask.error,
+    };
+    await shot("10-unreviewed-workflow-stopped-before-tts");
+    await fitCanvas();
+    await button("split", "审阅与编辑");
+    await clickText("采用当前稿件", '[data-testid="draft-editor"]');
+    await clickText("完成编辑", '[data-testid="draft-editor"]');
+    await page.waitForSelector('[data-testid="draft-editor"]', {
+        hidden: true,
+    });
+    const { engineId, engineTask } = await runWorkflowFromUi();
     assert.equal(engineTask.status, "completed", engineTask.error);
     await pause(1000);
     g = await graph();
@@ -864,7 +1078,21 @@ try {
                 r.audio.startsWith(`tasks/${engineId}/`),
             ),
     );
+    const engineRequests = calls
+        .slice(engineCallStart)
+        .filter((c) => c.kind === "tts");
+    assert.equal(
+        calls.filter((c) => c.kind === "split").length,
+        splitCountBeforeEngine,
+    );
+    assert.equal(engineRequests.length, updatedSegments.length);
+    engineRequests.forEach((r, i) =>
+        assert.ok(r.text_prompt.includes(updatedSegments[i].trim())),
+    );
     records.checks.engine = {
+        noLlmRerun: true,
+        currentDraft: updatedSegments,
+        actualRequests: engineRequests,
         taskId: engineId,
         complete: true,
         usesAppExport: true,
@@ -875,6 +1103,7 @@ try {
     assert.equal(errors.length, 0, errors.join("\n"));
     write("results.json", records);
     write("provider-requests.json", calls);
+    write("actual-task-requests.json", taskRequests);
     console.log(
         JSON.stringify(
             {
@@ -890,6 +1119,7 @@ try {
     records.failure = String(error);
     write("results.json", records);
     write("provider-requests.json", calls);
+    write("actual-task-requests.json", taskRequests);
     if (page) {
         await page
             .screenshot({ path: path.join(shots, "failure.png") })
@@ -901,7 +1131,13 @@ try {
     }
     throw error;
 } finally {
-    if (browser) await browser.close();
-    if (app) app.kill();
+    if (browser) {
+        await Promise.race([browser.close(), pause(5000)]);
+        if (browser.process()?.exitCode === null) browser.process().kill();
+    }
+    if (app) app.kill("SIGTERM");
+    mock.closeAllConnections();
     await new Promise((r) => mock.close(r));
 }
+
+process.exit(process.exitCode ?? 0);
