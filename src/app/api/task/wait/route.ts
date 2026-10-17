@@ -11,6 +11,7 @@ import {
     onTaskEvent,
     type TaskEvent,
 } from "@/lib/task/emitter";
+import { taskRecordEvent } from "@/lib/task/task-record-event";
 
 /**
  * GET /api/task/wait?taskId=xxx&reconnect=false
@@ -29,13 +30,6 @@ export async function GET(request: NextRequest) {
         return new Response("taskId is required", { status: 400 });
     }
 
-    // Reconnect mode: check whether the task is still running
-    if (reconnect && !isTaskRunning(taskId)) {
-        return new Response("Task does not exist or has already completed", {
-            status: 404,
-        });
-    }
-
     // Resolve the tenant scope while the request context is still available;
     // the execution below outlives it, so pin the scope via ALS.
     const scope = await getScope();
@@ -47,22 +41,13 @@ export async function GET(request: NextRequest) {
     const row = await db.query.tasks.findFirst({
         where: eq(tasks.id, taskId),
     });
-    if (row && (row.status === "completed" || row.status === "failed")) {
-        const done = row.status === "completed";
-        let data: Record<string, unknown> = {};
-        try {
-            data = JSON.parse(
-                (done ? row.result : row.error) ?? "{}",
-            ) as Record<string, unknown>;
-        } catch {
-            /* legacy rows may hold plain text — replay an empty payload */
-        }
-        const frame = `data: ${jsonStringifyForSse({
-            id: taskId,
-            status: done ? "COMPLETED" : "FAILED",
-            nodeId: row.nodeId,
-            data,
-        })}\n\n`;
+    if (
+        row &&
+        (row.status === "completed" ||
+            row.status === "failed" ||
+            row.status === "cancelled")
+    ) {
+        const frame = `data: ${jsonStringifyForSse(taskRecordEvent(row))}\n\n`;
         return new Response(frame, {
             headers: {
                 "Content-Type": "text/event-stream; charset=utf-8",
@@ -70,6 +55,13 @@ export async function GET(request: NextRequest) {
                 Connection: "keep-alive",
                 "X-Accel-Buffering": "no",
             },
+        });
+    }
+
+    // Reconnect mode: check whether the task is still running
+    if (reconnect && !isTaskRunning(taskId)) {
+        return new Response("Task does not exist or has already completed", {
+            status: 404,
         });
     }
 

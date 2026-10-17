@@ -724,10 +724,7 @@ try {
                 data: { fileKeys: [fileKey] },
             },
         ]);
-        await page.waitForFunction(() => {
-            const a = document.querySelector("audio");
-            return a?.readyState >= 1 && a.duration > 0;
-        });
+        await page.waitForSelector("audio");
         const playback = await page.$eval("audio", async (a) => {
             await a.play();
             return {

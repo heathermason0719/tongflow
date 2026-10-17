@@ -15,3 +15,10 @@ export function getTaskWaitUrl(taskId: string, reconnect?: boolean): string {
 export function getTaskStopUrl(): string {
     return apiUrl("/api/task/stop");
 }
+
+/** Multiplex all task ids over one HTTP connection. */
+export function getTaskBatchWaitUrl(ids: string[]): string {
+    return apiUrl(
+        `/api/task/batch/wait?${new URLSearchParams({ ids: ids.join(",") })}`,
+    );
+}

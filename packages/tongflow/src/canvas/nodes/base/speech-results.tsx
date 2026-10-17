@@ -21,7 +21,8 @@ export function SpeechResults({
     signature: string;
 }) {
     const t = useTranslations("Workspace.nodes.speechFlow");
-    const [error, setError] = useState("");
+    const [errors, setErrors] = useState<Record<number, string>>({});
+    const [downloading, setDownloading] = useState<Set<number>>(new Set());
     const results = data.speechResults as SpeechResult[] | undefined;
     if (!results?.length) return null;
     const current = signature === data.speechInputSignature;
@@ -63,34 +64,56 @@ export function SpeechResults({
                         <>
                             <audio
                                 controls
-                                preload="metadata"
+                                preload="none"
                                 src={getFileUrl(row.audio)}
                                 className="w-full"
                             />
                             <Button
                                 size="sm"
                                 variant="outline"
+                                disabled={downloading.has(i)}
+                                aria-busy={downloading.has(i)}
                                 onClick={() => {
+                                    setDownloading((current) =>
+                                        new Set(current).add(i),
+                                    );
+                                    setErrors((current) => ({
+                                        ...current,
+                                        [i]: "",
+                                    }));
                                     void downloadFile(
                                         getFileUrl(row.audio!),
                                         row.audio!,
-                                    ).catch((e) => setError(String(e)));
+                                    )
+                                        .catch((e) =>
+                                            setErrors((current) => ({
+                                                ...current,
+                                                [i]: String(e),
+                                            })),
+                                        )
+                                        .finally(() =>
+                                            setDownloading((current) => {
+                                                const next = new Set(current);
+                                                next.delete(i);
+                                                return next;
+                                            }),
+                                        );
                                 }}
                             >
                                 {t("download")}
                             </Button>
                         </>
                     )}
+                    {errors[i] && (
+                        <p role="alert" className="text-xs text-red-600">
+                            {errors[i]}
+                        </p>
+                    )}
                     {row.error && (
                         <p className="text-xs text-red-600">{row.error}</p>
                     )}
                 </div>
             ))}
-            {error && (
-                <p role="alert" className="text-xs text-red-600">
-                    {error}
-                </p>
-            )}
         </div>
     );
 }

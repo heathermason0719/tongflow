@@ -26,6 +26,10 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
 const write = (name, data) =>
     fs.writeFileSync(path.join(output, name), JSON.stringify(data, null, 2));
 const calls = [];
+const reliabilityMode = process.env.TONGFLOW_QA_LONG_BATCH === "1";
+let slowBatchCount = 0,
+    mockActive = 0,
+    maxMockActive = 0;
 const taskRequests = [];
 const records = {
     provider: "local simulation; NOT real Bailian generation",
@@ -118,7 +122,21 @@ const mock = http.createServer(async (req, res) => {
                 outputSha256: sha(audio),
             });
             // Complete in a different order from the inputs.
-            await pause(index % 3 === 0 ? 650 : index % 3 === 1 ? 80 : 250);
+            mockActive++;
+            maxMockActive = Math.max(maxMockActive, mockActive);
+            try {
+                await pause(
+                    reliabilityMode && index < slowBatchCount
+                        ? 40000 + (index % 3) * 100
+                        : index % 3 === 0
+                          ? 650
+                          : index % 3 === 1
+                            ? 80
+                            : 250,
+                );
+            } finally {
+                mockActive--;
+            }
             response = {
                 output: {
                     audio: {
@@ -377,6 +395,22 @@ try {
     });
     page = (await browser.pages())[0];
     await page.setViewport({ width: 1800, height: 1200 });
+    if (reliabilityMode)
+        await page.evaluateOnNewDocument(() => {
+            window.__qaToastMax = 0;
+            window.addEventListener("DOMContentLoaded", () => {
+                new MutationObserver(() => {
+                    const count = [
+                        ...document.querySelectorAll('[role="status"]'),
+                    ].filter((el) =>
+                        /^(任务完成|Task completed)$/.test(
+                            el.textContent.trim(),
+                        ),
+                    ).length;
+                    window.__qaToastMax = Math.max(window.__qaToastMax, count);
+                }).observe(document.body, { childList: true, subtree: true });
+            });
+        });
     await page.setCookie({ name: "NEXT_LOCALE", value: "zh", url: base });
     const errors = [];
     page.on("pageerror", (e) => errors.push(String(e)));
@@ -434,9 +468,9 @@ try {
 
     const paragraph = (i) =>
         `第${i}站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。`;
-    const source =
-        Array.from({ length: 9 }, (_, i) => paragraph(i + 1)).join("\n\n") +
-        "\n";
+    const source = `${Array.from({ length: reliabilityMode ? 10 : 9 }, (_, i) =>
+        paragraph(i + 1),
+    ).join("\n\n")}\n`;
     const sourceFile = path.join(output, "public-long-script.txt");
     fs.writeFileSync(sourceFile, source);
     await seed([node("upload-script", "addFileNode", {})]);
@@ -647,7 +681,75 @@ try {
     console.log("Batch speech and downloads");
     const before = calls.filter((c) => c.kind === "tts").length;
     const firstTaskCount = taskRequests.length;
+    if (reliabilityMode) slowBatchCount = segments.length;
+    const longStart = Date.now();
     await button("clone", "生成语音");
+    if (reliabilityMode) {
+        await page.waitForFunction(
+            (count) =>
+                JSON.parse(localStorage.getItem("nodes") || "[]").find(
+                    (n) => n.id === "clone",
+                )?.data.taskBatch?.entries?.length === count,
+            {},
+            segments.length,
+        );
+        await pause(2000);
+        await page.setOfflineMode(true);
+        await pause(8000);
+        await page.setOfflineMode(false);
+        const createsBeforeReload = taskRequests.filter(
+            (r) => r.feature === "text-gen-speech-clone",
+        ).length;
+        await page.reload({ waitUntil: "domcontentloaded" });
+        await page.waitForSelector(selector("clone"));
+        await page.waitForFunction(
+            () =>
+                JSON.parse(localStorage.getItem("nodes") || "[]").find(
+                    (n) => n.id === "clone",
+                )?.data.outputPending === true,
+        );
+        // Save from the real UI while the model requests are still in progress.
+        const title = await page.waitForSelector("button::-p-text(新创意)");
+        await title.hover();
+        await clickText("保存", "div.absolute");
+        await page.waitForSelector('[role="dialog"] input');
+        const input = await page.$('[role="dialog"] input');
+        await input.evaluate((el) => {
+            el.focus();
+            el.select();
+        });
+        await page.keyboard.type("长时批次断网恢复验收");
+        const saveResponse = page.waitForResponse(
+            (r) =>
+                r.url().endsWith("/api/workspace/save") &&
+                r.request().method() === "POST",
+        );
+        const savingAt = Date.now();
+        await clickText("保存", '[role="dialog"]');
+        const savedDuringRun = await saveResponse;
+        assert.equal(savedDuringRun.status(), 200);
+        assert.ok(Date.now() - savingAt < 5000);
+        const persisted = JSON.parse(savedDuringRun.request().postData());
+        assert.equal(
+            persisted.flow.nodes.find((n) => n.id === "clone").data.taskBatch
+                .entries.length,
+            segments.length,
+        );
+        write("saved-inflight-workflow.json", persisted);
+        assert.equal(
+            taskRequests.filter((r) => r.feature === "text-gen-speech-clone")
+                .length,
+            createsBeforeReload,
+        );
+        records.checks.longBatchRecovery = {
+            offlineSeconds: 8,
+            reloadedDuringGeneration: true,
+            savesDuringGeneration: true,
+            noResubmissionAfterReload: true,
+            saveMs: Date.now() - savingAt,
+            taskCount: segments.length,
+        };
+    }
     await page.waitForFunction(
         (count) => {
             const clone = JSON.parse(
@@ -660,9 +762,23 @@ try {
                 )
             );
         },
-        { timeout: 90000 },
+        { timeout: reliabilityMode ? 180000 : 90000 },
         segments.length,
     );
+    if (reliabilityMode) {
+        records.checks.longBatchRecovery.durationMs = Date.now() - longStart;
+        records.checks.longBatchRecovery.maxMockConcurrency = maxMockActive;
+        records.checks.longBatchRecovery.maxCompletionToasts =
+            await page.evaluate(() => window.__qaToastMax);
+        assert.ok(Date.now() - longStart > 30000);
+        assert.ok(maxMockActive <= 6);
+        assert.ok(records.checks.longBatchRecovery.maxCompletionToasts <= 1);
+        assert.ok(
+            !(await page.evaluate(() => document.body.textContent)).includes(
+                "Request timed out",
+            ),
+        );
+    }
     g = await graph();
     const clone = g.nodes.find((n) => n.id === "clone");
     assert.deepEqual(
@@ -724,7 +840,15 @@ try {
             const out = [];
             for (const audio of elements) {
                 await audio.play();
-                await new Promise((r) => setTimeout(r, 100));
+                // preload=none intentionally delays media loading. Wait for
+                // the playback clock rather than an arbitrary 100 ms tick.
+                const until = Date.now() + 5000;
+                while (
+                    audio.currentTime === 0 &&
+                    !audio.error &&
+                    Date.now() < until
+                )
+                    await new Promise((r) => setTimeout(r, 50));
                 out.push({
                     duration: audio.duration,
                     time: audio.currentTime,
@@ -735,7 +859,10 @@ try {
             return out;
         },
     );
-    assert.ok(playback.every((p) => p.duration > 0 && p.time > 0 && !p.error));
+    assert.ok(
+        playback.every((p) => p.duration > 0 && p.time > 0 && !p.error),
+        JSON.stringify(playback),
+    );
     records.checks.playback = playback;
     const client = await page.createCDPSession();
     await client.send("Browser.setDownloadBehavior", {
@@ -894,22 +1021,34 @@ try {
 
     // Use the app's real Save dialog (exporter included), then its workflow library.
     console.log("Saving and reopening");
-    const titleButton = await page.waitForSelector("button::-p-text(新创意)");
+    const titleButton = await page.waitForSelector(
+        reliabilityMode
+            ? "button::-p-text(长时批次断网恢复验收)"
+            : "button::-p-text(新创意)",
+    );
     await titleButton.hover();
     await clickText("保存", "div.absolute");
     await page.waitForSelector('[role="dialog"]');
     const nameInput = await page.$('[role="dialog"] input');
-    await nameInput.click({ clickCount: 3 });
-    await nameInput.type("公开配音链路验收");
+    await nameInput.evaluate((el) => {
+        el.focus();
+        el.select();
+    });
+    await page.keyboard.type("公开配音链路验收");
     const savedResponse = page.waitForResponse(
         (r) =>
-            r.url().endsWith("/api/workspace/save") &&
-            r.request().method() === "POST",
+            /\/api\/workspace\/(save|\d+)$/.test(new URL(r.url()).pathname) &&
+            ["POST", "PUT"].includes(r.request().method()),
     );
     await clickText("保存", '[role="dialog"]');
     const saved = await savedResponse;
     assert.equal(saved.status(), 200);
-    const { workflowId } = await saved.json();
+    const savedBody = await saved.json();
+    const workflowId =
+        savedBody.workflowId ??
+        (await page.evaluate(
+            () => JSON.parse(localStorage.getItem("workflowMeta")).id,
+        ));
     const savePayload = JSON.parse(saved.request().postData());
     write("saved-workflow.json", savePayload);
     await page.reload({ waitUntil: "networkidle0" });

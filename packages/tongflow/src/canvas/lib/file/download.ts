@@ -1,4 +1,4 @@
-import { hostFetch } from "../../host";
+import { getCanvasHost, hostFetch } from "../../host";
 
 /** Download bytes instead of navigating to a browser media player.
  * Blob URLs also support cross-origin media when its server allows fetching.
@@ -7,6 +7,31 @@ export async function downloadFile(
     url: string,
     fileKey: string,
 ): Promise<void> {
+    const target = new URL(url, window.location.href);
+    // Local attachments go straight to Chrome's streaming download manager.
+    // Avoid holding every multi-megabyte WAV twice (Blob + object URL) in JS.
+    if (
+        !getCanvasHost().fetch &&
+        target.origin === window.location.origin &&
+        target.pathname.startsWith("/api/uploads/")
+    ) {
+        target.searchParams.set(
+            "download",
+            fileKey.split("/").pop() || "audio",
+        );
+        const check = await hostFetch(target.href, {
+            method: "HEAD",
+            signal: AbortSignal.timeout(30_000),
+        });
+        if (!check.ok) throw new Error(`Download failed: HTTP ${check.status}`);
+        const link = document.createElement("a");
+        link.href = target.href;
+        link.download = fileKey.split("/").pop() || "audio";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        return;
+    }
     const response = await hostFetch(url);
     if (!response.ok) {
         throw new Error(`Download failed: HTTP ${response.status}`);

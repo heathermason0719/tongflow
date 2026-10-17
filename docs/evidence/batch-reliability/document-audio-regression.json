@@ -1,0 +1,326 @@
+{
+    "offlineProvider": true,
+    "documents": [
+        {
+            "filename": "short.md",
+            "uploadKey": "XcAwYi8A0N75mpwN2o8zf.md",
+            "parseTaskId": "VX1r_NkGt5Ieuu5O-mXcB",
+            "textMaterialId": 1,
+            "exactTextMatch": true,
+            "textSha256": "ed147dd4de99fc377a40c2a976801268f7014b5ffcd4e78985a38ffe5e202b1d",
+            "characters": 176,
+            "splitTaskId": "uG54sPSvUmSfibHUsm6DI",
+            "model": "qwen-plus",
+            "segments": 5,
+            "maxSegmentCharacters": 52,
+            "providerCallsDuringExtraction": 0
+        },
+        {
+            "filename": "short.txt",
+            "uploadKey": "ockeu3WK1ZBAndTb50L-i.txt",
+            "parseTaskId": "hC1sxJKbekjqL4BXXwZKh",
+            "textMaterialId": 2,
+            "exactTextMatch": true,
+            "textSha256": "8bc07e8a2c3bf677b28a186ad27b9f022bf326f93eb8b4242cf0b2a9bdaacb96",
+            "characters": 132,
+            "splitTaskId": "Ii6zyfZcLhPv2h-FSUoiT",
+            "model": "qwen-plus",
+            "segments": 3,
+            "maxSegmentCharacters": 53,
+            "providerCallsDuringExtraction": 0
+        },
+        {
+            "filename": "short.docx",
+            "uploadKey": "wubf7kvt417CBj00WO08h.docx",
+            "parseTaskId": "mMft59zFVQoc7_WoLFhrF",
+            "textMaterialId": 3,
+            "exactTextMatch": true,
+            "textSha256": "cb532def15fc604aa5228cf4b0fb024f1002b4693fc054cb842d7a4363d37175",
+            "characters": 142,
+            "splitTaskId": "HEFhoJq1Uy759-LFAP2_8",
+            "model": "qwen-plus",
+            "segments": 4,
+            "maxSegmentCharacters": 52,
+            "providerCallsDuringExtraction": 0
+        },
+        {
+            "filename": "long.txt",
+            "uploadKey": "hZQBDk_0PRAQWCGy27mmb.txt",
+            "parseTaskId": "wpKUTN4KI28U9hqSzK4-l",
+            "textMaterialId": 4,
+            "exactTextMatch": true,
+            "textSha256": "cb99e07dc9ab88ae25724a8c4b2949ace60145880c106d4720f1f2858bdc96be",
+            "characters": 63458,
+            "splitTaskId": "qW8HUJ4RUVv2q19CE75C4",
+            "model": "deepseek-v4.1-flash",
+            "segments": 806,
+            "maxSegmentCharacters": 89,
+            "providerCallsDuringExtraction": 0
+        },
+        {
+            "filename": "existing.pdf",
+            "uploadKey": "W27ChXAYD5v8oATyVdVdq.pdf",
+            "parseTaskId": "fPPFR1sjcilcfBz7oC-Pu",
+            "textMaterialId": 5,
+            "exactTextMatch": true,
+            "textSha256": "ddaef05209a5f2ac5ab1a46262e7fdf007afe46a4093f21069310eeff9a9bc1f",
+            "characters": 32,
+            "splitTaskId": "X6pn3xSc-HmuWvcN-62xl",
+            "model": "qwen-plus",
+            "segments": 1,
+            "maxSegmentCharacters": 32,
+            "providerCallsDuringExtraction": 1
+        }
+    ],
+    "audio": [
+        {
+            "sourceSha256": "946bdfe64fafcb707ac420e381ff71e3a78c8deaeace87a3f850765e758b5a65",
+            "downloadedSha256": "946bdfe64fafcb707ac420e381ff71e3a78c8deaeace87a3f850765e758b5a65",
+            "bytes": 791084,
+            "unchangedTabCount": 1,
+            "playback": {
+                "duration": 4.12,
+                "readyState": 4,
+                "error": null
+            },
+            "fullDecodePassed": true,
+            "format": "wav",
+            "streams": [
+                {
+                    "codec_name": "pcm_s16le",
+                    "sample_rate": "48000",
+                    "channels": 2
+                }
+            ],
+            "download": {
+                "state": "completed",
+                "totalBytes": 791084,
+                "receivedBytes": 791084
+            }
+        },
+        {
+            "sourceSha256": "48b3e9a5a9784f56be30efce9769e980bf266972e5c47fc4fbe771643377fb80",
+            "downloadedSha256": "48b3e9a5a9784f56be30efce9769e980bf266972e5c47fc4fbe771643377fb80",
+            "bytes": 14519285,
+            "unchangedTabCount": 1,
+            "playback": {
+                "duration": 889.790667,
+                "readyState": 4,
+                "error": null
+            },
+            "fullDecodePassed": true,
+            "format": "mov,mp4,m4a,3gp,3g2,mj2",
+            "streams": [
+                {
+                    "codec_name": "aac",
+                    "sample_rate": "48000",
+                    "channels": 2
+                }
+            ],
+            "download": {
+                "state": "completed",
+                "totalBytes": 14519285,
+                "receivedBytes": 14519285
+            }
+        }
+    ],
+    "longEngineWorkflow": {
+        "workflowId": 1,
+        "taskId": "ueggVj510P1Ia0-Hn7Kv7",
+        "exactExtractedTextMatch": true,
+        "splitCoverageMatch": true,
+        "stoppedForReviewAfterPublishingDraft": true
+    },
+    "audioLibraryReused": true,
+    "qwenAudioUiUnchanged": true,
+    "providerCalls": [
+        {
+            "kind": "split-text",
+            "sourceChars": 176,
+            "model": "qwen-plus",
+            "sourceSha256": "ed147dd4de99fc377a40c2a976801268f7014b5ffcd4e78985a38ffe5e202b1d",
+            "segments": 5
+        },
+        {
+            "kind": "split-text",
+            "sourceChars": 132,
+            "model": "qwen-plus",
+            "sourceSha256": "8bc07e8a2c3bf677b28a186ad27b9f022bf326f93eb8b4242cf0b2a9bdaacb96",
+            "segments": 3
+        },
+        {
+            "kind": "split-text",
+            "sourceChars": 142,
+            "model": "qwen-plus",
+            "sourceSha256": "cb532def15fc604aa5228cf4b0fb024f1002b4693fc054cb842d7a4363d37175",
+            "segments": 4
+        },
+        {
+            "kind": "split-text",
+            "sourceChars": 5991,
+            "model": "deepseek-v4.1-flash",
+            "sourceSha256": "325be54a1e649357b41b5fcc44596c68c58e1881083db1cdd3a811f97cb82e5e",
+            "segments": 76
+        },
+        {
+            "kind": "split-text",
+            "sourceChars": 5980,
+            "model": "deepseek-v4.1-flash",
+            "sourceSha256": "cdd23504d578a702c5687c4003928c49ad977d0e9632af190bac5ae41c4bbffb",
+            "segments": 76
+        },
+        {
+            "kind": "split-text",
+            "sourceChars": 6000,
+            "model": "deepseek-v4.1-flash",
+            "sourceSha256": "5a7f71ec6ec8b5bbdee0cc1af74619c997e605eea093d268bb6a6233b8dcdbc0",
+            "segments": 76
+        },
+        {
+            "kind": "split-text",
+            "sourceChars": 5980,
+            "model": "deepseek-v4.1-flash",
+            "sourceSha256": "83198510c9584104ebc96fde6a8657f370e9957f9ed018ab2ad8e745b0449423",
+            "segments": 76
+        },
+        {
+            "kind": "split-text",
+            "sourceChars": 5981,
+            "model": "deepseek-v4.1-flash",
+            "sourceSha256": "0a1f5d540c741281f5ac71a7b5b954b1e4b02cd239da642aa915eaf023e88306",
+            "segments": 76
+        },
+        {
+            "kind": "split-text",
+            "sourceChars": 5976,
+            "model": "deepseek-v4.1-flash",
+            "sourceSha256": "ce626ab9bddb0c45644bf851ffd8f02149145914eb0ebcdc4228f04a90233754",
+            "segments": 76
+        },
+        {
+            "kind": "split-text",
+            "sourceChars": 5980,
+            "model": "deepseek-v4.1-flash",
+            "sourceSha256": "a0753d181bbd684bb4d1a70afc2ef60f7cec274c97800a749211ea362545a7e5",
+            "segments": 76
+        },
+        {
+            "kind": "split-text",
+            "sourceChars": 5991,
+            "model": "deepseek-v4.1-flash",
+            "sourceSha256": "ef1c506fb14ed282c3ff2ec9cc63d553f206d07515e43d1b57a2d1415556f13a",
+            "segments": 76
+        },
+        {
+            "kind": "split-text",
+            "sourceChars": 5980,
+            "model": "deepseek-v4.1-flash",
+            "sourceSha256": "3edbe628fdf864fe84b1d372e2c3afe47508781e150c73d3e53921e9dd5ec059",
+            "segments": 76
+        },
+        {
+            "kind": "split-text",
+            "sourceChars": 6000,
+            "model": "deepseek-v4.1-flash",
+            "sourceSha256": "fc0ff8f96702e42b2443a4fb4a9df5f0d2990af5824ee1e095208068cd12a034",
+            "segments": 76
+        },
+        {
+            "kind": "split-text",
+            "sourceChars": 3599,
+            "model": "deepseek-v4.1-flash",
+            "sourceSha256": "6b8bc748a67a5db8dfb64a60fb3cfc6bd943316ba43780accccb733e364a5c8c",
+            "segments": 46
+        },
+        {
+            "kind": "split-text",
+            "sourceChars": 5991,
+            "model": "qwen-plus",
+            "sourceSha256": "325be54a1e649357b41b5fcc44596c68c58e1881083db1cdd3a811f97cb82e5e",
+            "segments": 76
+        },
+        {
+            "kind": "split-text",
+            "sourceChars": 5980,
+            "model": "qwen-plus",
+            "sourceSha256": "cdd23504d578a702c5687c4003928c49ad977d0e9632af190bac5ae41c4bbffb",
+            "segments": 76
+        },
+        {
+            "kind": "split-text",
+            "sourceChars": 6000,
+            "model": "qwen-plus",
+            "sourceSha256": "5a7f71ec6ec8b5bbdee0cc1af74619c997e605eea093d268bb6a6233b8dcdbc0",
+            "segments": 76
+        },
+        {
+            "kind": "split-text",
+            "sourceChars": 5980,
+            "model": "qwen-plus",
+            "sourceSha256": "83198510c9584104ebc96fde6a8657f370e9957f9ed018ab2ad8e745b0449423",
+            "segments": 76
+        },
+        {
+            "kind": "split-text",
+            "sourceChars": 5981,
+            "model": "qwen-plus",
+            "sourceSha256": "0a1f5d540c741281f5ac71a7b5b954b1e4b02cd239da642aa915eaf023e88306",
+            "segments": 76
+        },
+        {
+            "kind": "split-text",
+            "sourceChars": 5976,
+            "model": "qwen-plus",
+            "sourceSha256": "ce626ab9bddb0c45644bf851ffd8f02149145914eb0ebcdc4228f04a90233754",
+            "segments": 76
+        },
+        {
+            "kind": "split-text",
+            "sourceChars": 5980,
+            "model": "qwen-plus",
+            "sourceSha256": "a0753d181bbd684bb4d1a70afc2ef60f7cec274c97800a749211ea362545a7e5",
+            "segments": 76
+        },
+        {
+            "kind": "split-text",
+            "sourceChars": 5991,
+            "model": "qwen-plus",
+            "sourceSha256": "ef1c506fb14ed282c3ff2ec9cc63d553f206d07515e43d1b57a2d1415556f13a",
+            "segments": 76
+        },
+        {
+            "kind": "split-text",
+            "sourceChars": 5980,
+            "model": "qwen-plus",
+            "sourceSha256": "3edbe628fdf864fe84b1d372e2c3afe47508781e150c73d3e53921e9dd5ec059",
+            "segments": 76
+        },
+        {
+            "kind": "split-text",
+            "sourceChars": 6000,
+            "model": "qwen-plus",
+            "sourceSha256": "fc0ff8f96702e42b2443a4fb4a9df5f0d2990af5824ee1e095208068cd12a034",
+            "segments": 76
+        },
+        {
+            "kind": "split-text",
+            "sourceChars": 3599,
+            "model": "qwen-plus",
+            "sourceSha256": "6b8bc748a67a5db8dfb64a60fb3cfc6bd943316ba43780accccb733e364a5c8c",
+            "segments": 46
+        },
+        {
+            "kind": "pdf",
+            "model": "qwen-plus",
+            "inputType": "file"
+        },
+        {
+            "kind": "split-text",
+            "sourceChars": 32,
+            "model": "qwen-plus",
+            "sourceSha256": "ddaef05209a5f2ac5ab1a46262e7fdf007afe46a4093f21069310eeff9a9bc1f",
+            "segments": 1
+        }
+    ],
+    "status": "passed"
+}

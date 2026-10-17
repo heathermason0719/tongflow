@@ -16,7 +16,11 @@ import {
 } from "../../core";
 import { hostFetch } from "../host";
 import { createTask as apiCreateTask, updateTaskStatus } from "../lib/api/task";
-import { getTaskStopUrl, getTaskWaitUrl } from "../lib/task/api-url";
+import {
+    getTaskBatchWaitUrl,
+    getTaskStopUrl,
+    getTaskWaitUrl,
+} from "../lib/task/api-url";
 import {
     emitSSEConnected,
     emitSSETaskMessage,
@@ -127,6 +131,15 @@ export interface TaskCreationConfig {
     prompt: Record<string, unknown>;
     nodeId: string;
     workflowId?: number;
+    batchId?: string;
+    batchIndex?: number;
+    inputSignature?: string;
+}
+
+export interface BatchTaskEntry {
+    taskId: string;
+    batchIndex: number;
+    config: TaskCreationConfig;
 }
 
 // Batch task options
@@ -637,7 +650,8 @@ export function useCreateTask(options?: TaskSubscriptionOptions) {
 
 /**
  * Manage many tasks concurrently.
- * Opens one SSE channel per task; loading stops when streams finish or drop.
+ * One SSE channel carries durable snapshots and progress for the entire batch.
+ * Transport errors reconnect without changing task outcomes or resubmitting.
  */
 export function useBatchTaskManager(
     config?: BatchTaskConfig,
@@ -662,229 +676,166 @@ export function useBatchTaskManager(
         Map<string, ReturnType<typeof setTimeout>>
     >(new Map());
 
-    const createBatchTasks = useCallback(
-        async (taskConfigs: TaskCreationConfig[]) => {
-            // Flip loading immediately, before SSE connects
+    const generationRef = useRef(0);
+    const resumeBatchTasks = useCallback(
+        (entries: BatchTaskEntry[]) => {
+            if (!entries.length) return;
+            const generation = ++generationRef.current;
+            eventSourcesRef.current.forEach((source) => source.close());
+            eventSourcesRef.current.clear();
+            reconnectTimeoutsRef.current.forEach(clearTimeout);
+            reconnectTimeoutsRef.current.clear();
+            const lookup = new Map(
+                entries.map((entry) => [entry.taskId, entry]),
+            );
+            const ids = entries.map((entry) => entry.taskId);
+            const terminal = new Set<string>();
+            const statuses = new Map<string, string>();
+            let attempts = 0;
             setIsLoading(true);
             setCompletedTasks([]);
-            setTotalTasks(taskConfigs.length);
-            activeConnectionsRef.current.clear();
-            if (batchCancelTimeoutRef.current != null) {
-                clearTimeout(batchCancelTimeoutRef.current);
-                batchCancelTimeoutRef.current = null;
-            }
-
-            try {
-                const taskIds: string[] = [];
-
-                let nextBatchIndex = 0;
-                const createPromises = taskConfigs.map(async (taskConfig) => {
-                    const batchIndex = nextBatchIndex++;
-                    const { taskId } = await apiCreateTask(taskConfig);
-                    taskIds.push(taskId);
-
-                    setTask(taskId, {
-                        id: taskId,
-                        status: "PENDING",
-                        progress: 0,
-                        data: taskConfig.prompt,
-                        nodeId: taskConfig.nodeId,
-                    });
-
-                    // Link task -> node for routing
-                    trackTaskToNode(taskId, taskConfig.nodeId);
-
-                    // Per-task SSE (with backoff reconnect)
-                    const connectTaskSSE = (tid: string) => {
-                        const es = new EventSource(getTaskWaitUrl(tid));
-
-                        es.onopen = () => {
-                            logger.debug(
-                                `[SSE Batch] Connected for task ${tid}`,
-                            );
-                            reconnectAttemptsRef.current.set(tid, 0);
-                            activeConnectionsRef.current.add(tid);
-                            emitSSEConnected(tid);
-                        };
-
-                        es.onmessage = (event) => {
-                            try {
-                                const message: SSETaskMessage = JSON.parse(
-                                    event.data,
-                                );
-                                logger.debug(
-                                    `[SSE Batch] Message for task ${tid}:`,
-                                    message,
-                                );
-
-                                emitTaskProgressFromSSE(message);
-
-                                const taskStatus = mapSSEStatusToTaskStatus(
-                                    message.status,
-                                );
-                                const msgNodeId = message.nodeId;
-
-                                const internalTask: Task = {
-                                    id: message.id,
-                                    status: taskStatus,
-                                    progress: message.progress || 0,
-                                    data: message.data,
-                                    error: message.error,
-                                    input: taskConfig.prompt,
-                                    batchIndex,
-                                    nodeId:
-                                        (msgNodeId != null && msgNodeId !== ""
-                                            ? String(msgNodeId)
-                                            : undefined) ??
-                                        useTaskStore
-                                            .getState()
-                                            .getTaskNodeId(message.id),
-                                };
-
-                                setTask(internalTask.id, internalTask);
-                                routeTaskToNode(internalTask);
-
-                                if (taskStatus === "COMPLETED") {
-                                    toast.success(t("taskCompleted"));
-                                } else if (taskStatus === "CANCELLED") {
-                                    if (batchCancelTimeoutRef.current != null) {
-                                        clearTimeout(
-                                            batchCancelTimeoutRef.current,
-                                        );
-                                        batchCancelTimeoutRef.current = null;
-                                    }
-                                }
-
-                                if (isTerminalStatus(message.status)) {
-                                    updateTaskStatus({
-                                        taskId: message.id,
-                                        status: message.status,
-                                        data: message.data,
-                                    }).catch((err) => {
-                                        logger.error(
-                                            "[SSE Batch] Failed to update task status (frontend backup):",
-                                            err,
-                                        );
-                                    });
-
-                                    // Stop reconnect loop and close stream so
-                                    // the server doesn't re-execute the task
-                                    // on the next reconnect attempt.
-                                    const pending =
-                                        reconnectTimeoutsRef.current.get(tid);
-                                    if (pending != null) {
-                                        clearTimeout(pending);
-                                        reconnectTimeoutsRef.current.delete(
-                                            tid,
-                                        );
-                                    }
-                                    reconnectAttemptsRef.current.set(
-                                        tid,
-                                        Number.POSITIVE_INFINITY,
-                                    );
-                                    es.close();
-                                    eventSourcesRef.current.delete(tid);
-                                    activeConnectionsRef.current.delete(tid);
-                                    if (
-                                        activeConnectionsRef.current.size === 0
-                                    ) {
-                                        setIsLoading(false);
-                                        if (taskStatus === "CANCELLED") {
-                                            setCurrentBatchTaskIds(new Set());
-                                        }
-                                    }
-                                }
-
-                                if (options?.onTaskUpdate) {
-                                    options.onTaskUpdate(internalTask);
-                                }
-                            } catch (err) {
-                                logger.error(
-                                    `[SSE Batch] Error parsing message:`,
-                                    err,
-                                );
-                            }
-                        };
-
-                        es.addEventListener("close", () => {
-                            logger.debug(
-                                `[SSE Batch] Server sent close event for task ${tid}`,
-                            );
-                            es.close();
-                            eventSourcesRef.current.delete(tid);
-                            activeConnectionsRef.current.delete(tid);
-                            if (activeConnectionsRef.current.size === 0) {
-                                setIsLoading(false);
-                                logger.debug(
-                                    "[SSE Batch] All connections closed, loading stopped",
-                                );
-                            }
-                        });
-
-                        es.onerror = () => {
-                            es.close();
-                            eventSourcesRef.current.delete(tid);
-
-                            const attempts =
-                                (reconnectAttemptsRef.current.get(tid) ?? 0) +
-                                1;
-                            if (attempts <= SSE_DEFAULT_MAX_RETRIES) {
-                                reconnectAttemptsRef.current.set(tid, attempts);
-                                const delay = Math.min(
-                                    SSE_DEFAULT_RETRY_DELAY *
-                                        2 ** (attempts - 1),
-                                    SSE_MAX_RETRY_DELAY,
-                                );
-                                logger.debug(
-                                    `[SSE Batch] Reconnecting task ${tid} in ${delay}ms (attempt ${attempts}/${SSE_DEFAULT_MAX_RETRIES})`,
-                                );
-                                const timeoutId = setTimeout(() => {
-                                    reconnectTimeoutsRef.current.delete(tid);
-                                    connectTaskSSE(tid);
-                                }, delay);
-                                reconnectTimeoutsRef.current.set(
-                                    tid,
-                                    timeoutId,
-                                );
-                            } else {
-                                logger.error(
-                                    `[SSE Batch] Max reconnection attempts reached for task ${tid}`,
-                                );
-                                activeConnectionsRef.current.delete(tid);
-                                if (activeConnectionsRef.current.size === 0) {
-                                    setIsLoading(false);
-                                }
-                                if (options?.onError) {
-                                    options.onError(
-                                        new Error(
-                                            `Max reconnection attempts reached for task ${tid}`,
-                                        ),
-                                    );
-                                }
-                            }
-                        };
-
-                        eventSourcesRef.current.set(tid, es);
-                    };
-
-                    connectTaskSSE(taskId);
-
-                    return taskId;
+            setTotalTasks(entries.length);
+            setCurrentBatchTaskIds(new Set(ids));
+            activeConnectionsRef.current = new Set(ids);
+            for (const entry of entries) {
+                trackTaskToNode(entry.taskId, entry.config.nodeId);
+                setTask(entry.taskId, {
+                    id: entry.taskId,
+                    status: "PENDING",
+                    input: entry.config.prompt,
+                    batchIndex: entry.batchIndex,
+                    nodeId: entry.config.nodeId,
                 });
+            }
+            const connect = () => {
+                if (
+                    generation !== generationRef.current ||
+                    terminal.size === ids.length
+                )
+                    return;
+                const es = new EventSource(getTaskBatchWaitUrl(ids));
+                eventSourcesRef.current.set("batch", es);
+                es.onopen = () => {
+                    if (generation !== generationRef.current) {
+                        es.close();
+                        return;
+                    }
+                    attempts = 0;
+                    for (const id of ids)
+                        if (!terminal.has(id)) emitSSEConnected(id);
+                };
+                es.onmessage = (event) => {
+                    if (generation !== generationRef.current) return;
+                    try {
+                        const message: SSETaskMessage = JSON.parse(event.data);
+                        const entry = lookup.get(message.id);
+                        if (!entry || terminal.has(message.id)) return;
+                        const status = mapSSEStatusToTaskStatus(message.status);
+                        const task: Task = {
+                            id: message.id,
+                            status,
+                            data: message.data,
+                            progress: message.progress ?? 0,
+                            error:
+                                message.error ||
+                                (typeof message.data?.error === "string"
+                                    ? message.data.error
+                                    : undefined),
+                            input: entry.config.prompt,
+                            batchIndex: entry.batchIndex,
+                            nodeId: entry.config.nodeId,
+                        };
+                        if (isTerminalStatus(message.status)) {
+                            terminal.add(message.id);
+                            statuses.set(message.id, status);
+                            activeConnectionsRef.current.delete(message.id);
+                        }
+                        emitTaskProgressFromSSE(message);
+                        setTask(task.id, task);
+                        routeTaskToNode(task);
+                        options?.onTaskUpdate?.(task);
+                        if (terminal.size === ids.length) {
+                            es.close();
+                            eventSourcesRef.current.delete("batch");
+                            setIsLoading(false);
+                            if (batchCancelTimeoutRef.current != null) {
+                                clearTimeout(batchCancelTimeoutRef.current);
+                                batchCancelTimeoutRef.current = null;
+                            }
+                            if (
+                                [...statuses.values()].every(
+                                    (value) => value === "COMPLETED",
+                                )
+                            ) {
+                                toast.success(t("taskCompleted"), {
+                                    id: `batch-completed-${ids[0]}`,
+                                });
+                            }
+                        }
+                    } catch (error) {
+                        logger.error("[SSE Batch] Invalid batch event", error);
+                    }
+                };
+                es.onerror = () => {
+                    es.close();
+                    eventSourcesRef.current.delete("batch");
+                    if (
+                        generation !== generationRef.current ||
+                        terminal.size === ids.length
+                    )
+                        return;
+                    attempts++;
+                    if (attempts === 3)
+                        toast(t("batchReconnecting"), {
+                            id: `batch-reconnect-${ids[0]}`,
+                        });
+                    const timeout = setTimeout(
+                        () => {
+                            reconnectTimeoutsRef.current.delete("batch");
+                            connect();
+                        },
+                        Math.min(2000 * 2 ** Math.min(attempts - 1, 4), 30000),
+                    );
+                    reconnectTimeoutsRef.current.set("batch", timeout);
+                    // Keep waiting for durable results. A transport interruption is
+                    // never a model failure and never creates replacement tasks.
+                };
+            };
+            connect();
+        },
+        [setTask, trackTaskToNode, routeTaskToNode, options, t],
+    );
 
-                const createdTaskIds = await Promise.all(createPromises);
-                setCurrentBatchTaskIds(new Set(createdTaskIds));
-
-                return createdTaskIds;
+    const createBatchTasks = useCallback(
+        async (
+            taskConfigs: TaskCreationConfig[],
+            onCreated?: (entries: BatchTaskEntry[]) => void,
+        ) => {
+            setIsLoading(true);
+            const batchId = crypto.randomUUID();
+            try {
+                // Finish short create requests before opening the single SSE stream.
+                const entries = await Promise.all(
+                    taskConfigs.map(async (config, batchIndex) => {
+                        const saved = { ...config, batchId, batchIndex };
+                        const { taskId } = await apiCreateTask(saved, {
+                            showErrorToast: false,
+                        });
+                        return { taskId, batchIndex, config: saved };
+                    }),
+                );
+                onCreated?.(entries);
+                resumeBatchTasks(entries);
+                return entries.map((entry) => entry.taskId);
             } catch (error) {
-                logger.error("Failed to create batch tasks:", error);
-                // Ensure loading clears if creation blows up
                 setIsLoading(false);
-
+                toast.error(t("batchSubmitFailed"), {
+                    id: `batch-submit-${batchId}`,
+                });
                 throw error;
             }
         },
-        [setTask, trackTaskToNode, routeTaskToNode, options],
+        [resumeBatchTasks, t],
     );
 
     // Notify when entire batch settles
@@ -899,7 +850,9 @@ export function useBatchTaskManager(
 
             const completed = batchTasks.filter(
                 (task) =>
-                    task.status === "COMPLETED" || task.status === "FAILED",
+                    task.status === "COMPLETED" ||
+                    task.status === "FAILED" ||
+                    task.status === "CANCELLED",
             );
 
             setCompletedTasks(completed);
@@ -982,6 +935,7 @@ export function useBatchTaskManager(
             }
 
             // Tear down SSE clients
+            generationRef.current++;
             eventSourcesRef.current.forEach((eventSource) => {
                 eventSource.close();
             });
@@ -1020,6 +974,7 @@ export function useBatchTaskManager(
     // Tear down SSE registries on unmount
     useEffect(() => {
         return () => {
+            generationRef.current++;
             if (batchCancelTimeoutRef.current != null) {
                 clearTimeout(batchCancelTimeoutRef.current);
                 batchCancelTimeoutRef.current = null;
@@ -1037,6 +992,7 @@ export function useBatchTaskManager(
 
     return {
         createBatchTasks,
+        resumeBatchTasks,
         cancelTasks,
         isLoading,
         completedTasks,

@@ -1,4 +1,4 @@
-import { desc } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { logger } from "tongflow";
 import { getDb } from "@/db";
@@ -19,11 +19,22 @@ export async function GET(request: NextRequest) {
             10,
         );
         const offset = (page - 1) * pageSize;
+        const nodeId = request.nextUrl.searchParams.get("nodeId");
+        const ids = request.nextUrl.searchParams
+            .get("ids")
+            ?.split(",")
+            .filter(Boolean);
 
         const db = await getDb();
         const result = await db
             .select()
             .from(tasks)
+            .where(
+                and(
+                    nodeId ? eq(tasks.nodeId, nodeId) : undefined,
+                    ids?.length ? inArray(tasks.id, ids) : undefined,
+                ),
+            )
             .orderBy(desc(tasks.createdAt))
             .limit(pageSize)
             .offset(offset);
@@ -32,6 +43,7 @@ export async function GET(request: NextRequest) {
             ...task,
             prompt: safeJsonParse(task.prompt, {}),
             result: safeJsonParse(task.result, null),
+            params: safeJsonParse(task.params, null),
         }));
 
         return NextResponse.json({ tasks: taskList });

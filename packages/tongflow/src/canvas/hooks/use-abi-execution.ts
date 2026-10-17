@@ -11,6 +11,7 @@
 
 import { useNodeId, useReactFlow, useStoreApi } from "@xyflow/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslations } from "use-intl";
 import type { NodeSlot } from "../../core";
 import {
     buildPrompts,
@@ -21,8 +22,12 @@ import {
     parseTargetHandleId,
     promptMissingRequired,
     resolveAbiOutputMappings,
+    resolvedSpecForNodeType,
     resolveEdgeHandles,
 } from "../../core";
+import { apiGet } from "../lib/api/client";
+import type { ListTasksResponse } from "../lib/api/task";
+import { recoverBatch, type SavedTaskBatch } from "../lib/task/batch-recovery";
 import {
     applyResolvedOutputRoutes,
     normalizeTaskPayloadData,
@@ -85,6 +90,9 @@ export interface UseAbiExecutionReturn {
     canRun: boolean;
     /** ABI feature being executed. */
     feature: string;
+    recoverResults: () => Promise<void>;
+    recovering: boolean;
+    recoveryMessage: string;
     /** Whether running in execute-mode (vs design mode). */
     isExecuteMode: boolean;
     /** Missing plugin dialog state (canvas execute UX). */
@@ -104,6 +112,9 @@ export function useAbiExecution<F extends NodeSlot>(
     const { feature, form, disabled, onTaskUpdate, transformPrompts } = opts;
 
     const nodeId = useNodeId();
+    const tRecovery = useTranslations("Workspace.nodes.speechFlow");
+    const [recovering, setRecovering] = useState(false);
+    const [recoveryMessage, setRecoveryMessage] = useState("");
     const { updateNodeData } = useReactFlow();
     const storeApi = useStoreApi();
     const flowUpdates = useFlow((s) => s.updates);
@@ -266,6 +277,7 @@ export function useAbiExecution<F extends NodeSlot>(
     const {
         isLoading: taskLoading,
         createBatchTasks,
+        resumeBatchTasks,
         cancelTasks,
     } = useBatchTaskManager();
     const loading = taskLoading || nodeExecutionStatus === "running";
@@ -447,6 +459,137 @@ export function useAbiExecution<F extends NodeSlot>(
 
     useNodeTaskUpdate(nodeId ?? "", handleTaskUpdate);
 
+    const resume = useCallback(
+        (saved: SavedTaskBatch) => {
+            if (!nodeId || !saved.entries.length) return;
+            const prompts = saved.entries.map((entry) => entry.config.prompt);
+            const speechResults =
+                feature === "text-gen-speech-clone"
+                    ? prompts.map((prompt) => ({
+                          text: String(prompt.text ?? ""),
+                          refAudio: String(prompt.ref_audio ?? ""),
+                          status: "PENDING",
+                      }))
+                    : [];
+            batchRef.current = {
+                signature: saved.signature,
+                prompts,
+                outputs: new Map(),
+                terminal: new Set(),
+                speechResults,
+            };
+            const flow = useFlow.getState();
+            const node = flow.nodes.find((n) => n.id === nodeId);
+            if (node)
+                flow.updates(
+                    nodeId,
+                    {
+                        ...node.data,
+                        taskBatch: saved,
+                        activeInputSignature: saved.signature,
+                        outputPending: true,
+                        ...(speechResults.length
+                            ? {
+                                  speechResults,
+                                  speechInputSignature: saved.signature,
+                              }
+                            : {}),
+                    },
+                    { history: false },
+                );
+            resumeBatchTasks(saved.entries);
+        },
+        [nodeId, feature, resumeBatchTasks],
+    );
+
+    const savedBatch = useFlow(
+        (state) =>
+            state.nodes.find((n) => n.id === nodeId)?.data.taskBatch as
+                | SavedTaskBatch
+                | undefined,
+    );
+    useEffect(() => {
+        if (!savedBatch?.entries?.length || batchRef.current) return;
+        const node = useFlow.getState().nodes.find((n) => n.id === nodeId);
+        const rows = node?.data.speechResults as SpeechResult[] | undefined;
+        if (
+            node?.data.outputPending ||
+            (feature === "text-gen-speech-clone" &&
+                (!rows ||
+                    rows.length !== savedBatch.entries.length ||
+                    rows.some(
+                        (row) =>
+                            !["COMPLETED", "FAILED", "CANCELLED"].includes(
+                                row.status,
+                            ),
+                    )))
+        )
+            resume(savedBatch);
+    }, [savedBatch, nodeId, feature, resume]);
+
+    const recoverResults = useCallback(async () => {
+        if (!nodeId || recovering || loading) return;
+        setRecovering(true);
+        setRecoveryMessage("");
+        try {
+            const flow = useFlow.getState();
+            const node = flow.nodes.find((n) => n.id === nodeId);
+            const resolved = resolvedSpecForNodeType(node?.type);
+            if (!node || !resolved) return;
+            const prompts = buildPrompts({
+                spec: resolved,
+                configValues: node.data,
+                handleValues: collectHandleValues(
+                    nodeId,
+                    resolved,
+                    flow.nodes,
+                    flow.edges,
+                ),
+            });
+            const records = await apiGet<ListTasksResponse>(
+                `/api/task/list?nodeId=${encodeURIComponent(nodeId)}&pageSize=500`,
+                { showErrorToast: false },
+            );
+            const restored = recoverBatch(records.tasks, {
+                feature,
+                pluginId: resolveActivePluginId() ?? "",
+                model: resolveActiveModel(),
+                params: resolveActiveParams(),
+                prompts,
+            });
+            if (!restored) {
+                setRecoveryMessage(tRecovery("noRecoverableResults"));
+                return;
+            }
+            resume({
+                signature: restored.matchesCurrent
+                    ? inputSignature(nodeId, flow.nodes, flow.edges)
+                    : (restored.signature ??
+                      `historical-recovery-${restored.entries[0].taskId}`),
+                entries: restored.entries,
+            });
+            setRecoveryMessage(
+                tRecovery("recoveredResults", {
+                    count: restored.entries.length,
+                }),
+            );
+        } catch (error) {
+            setRecoveryMessage(String(error));
+        } finally {
+            setRecovering(false);
+        }
+    }, [
+        nodeId,
+        recovering,
+        loading,
+        feature,
+        resolveActivePluginId,
+        resolveActiveModel,
+        resolveActiveParams,
+        resume,
+        tRecovery,
+    ]);
+
     /* ---------- elapsed timer --------------------------------------- */
 
     useEffect(() => {
@@ -572,8 +715,18 @@ export function useAbiExecution<F extends NodeSlot>(
                 ...(params ? { params } : {}),
                 prompt,
                 nodeId,
+                inputSignature: signature,
             }));
-            await createBatchTasks(taskConfigs);
+            await createBatchTasks(taskConfigs, (entries) => {
+                const flow = useFlow.getState();
+                const node = flow.nodes.find((n) => n.id === nodeId);
+                if (node)
+                    flow.updates(
+                        nodeId,
+                        { ...node.data, taskBatch: { signature, entries } },
+                        { history: false },
+                    );
+            });
         } catch (error) {
             logger.error(`[useAbiExecution] Failed to create tasks:`, error);
         }
@@ -596,6 +749,9 @@ export function useAbiExecution<F extends NodeSlot>(
 
     return {
         run,
+        recoverResults,
+        recovering,
+        recoveryMessage,
         cancel: cancelTasks,
         // Only the node's own batch can be cancelled here; workflow-level runs
         // (nodeExecutionStatusMap) are cancelled from the smart island instead.

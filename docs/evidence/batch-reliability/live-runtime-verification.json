@@ -1,0 +1,30 @@
+{
+    "nodes": 36,
+    "edges": 34,
+    "results": 16,
+    "workflowId": 2,
+    "recoveryButton": true,
+    "audioPreloadNone": true,
+    "saveRequests": [
+        {
+            "status": 200,
+            "durationMs": 10
+        }
+    ],
+    "createdTasks": 0,
+    "libraryReopened": true,
+    "terminalBatchReplay": 16,
+    "terminalSingleReconnect": true,
+    "preservation": {
+        "workflowId": 2,
+        "workflowName": "长文配音工作流（已恢复16段）",
+        "nodes": 36,
+        "edges": 34,
+        "results": 16,
+        "existingTasksUnchanged": 27,
+        "oldWorkflowsUnchanged": 1,
+        "uploadFilesUnchanged": 25,
+        "settingsUnchanged": true,
+        "draftAndOriginalUnchanged": true
+    }
+}

@@ -1,0 +1,19 @@
+{
+    "browserSave": {
+        "error": "AbortError: signal is aborted without reason",
+        "durationMs": 30001.100000023842
+    },
+    "directServerSave": {
+        "status": 200,
+        "body": {
+            "workflowId": 2
+        }
+    },
+    "range": {
+        "status": 200,
+        "contentRange": null,
+        "contentLength": null,
+        "bytesReturned": 4400684
+    },
+    "totalMs": 30029
+}

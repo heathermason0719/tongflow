@@ -5,7 +5,7 @@
  * Replaces the start_task / _execute_* functions from the Python main.py.
  */
 
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import {
     ABI_NODES,
     logger,
@@ -101,7 +101,19 @@ export async function loadTaskData(taskId: string): Promise<TaskData | null> {
  * `executeWorkflowViaEngine` (the SDK engine), loading the workflow's
  * executable JSON on the way.
  */
-export async function dispatchTask(taskId: string): Promise<void> {
+const dispatches = new Map<string, Promise<void>>();
+
+export function dispatchTask(taskId: string): Promise<void> {
+    const current = dispatches.get(taskId);
+    if (current) return current;
+    const promise = dispatchPendingTask(taskId).finally(() =>
+        dispatches.delete(taskId),
+    );
+    dispatches.set(taskId, promise);
+    return promise;
+}
+
+async function dispatchPendingTask(taskId: string): Promise<void> {
     const db = await getDb();
     const task = await db.query.tasks.findFirst({
         where: eq(tasks.id, taskId),
@@ -120,8 +132,27 @@ export async function dispatchTask(taskId: string): Promise<void> {
         return;
     }
 
+    // Claim once in SQLite so reconnects, tabs and a second local port cannot
+    // invoke a completed task or launch the same pending task twice.
+    const claimed = await db
+        .update(tasks)
+        .set({ status: "processing" })
+        .where(and(eq(tasks.id, taskId), eq(tasks.status, "pending")))
+        .returning({ id: tasks.id });
+    if (!claimed.length) return;
+
     if (task.feature === "workflow") {
         if (!task.workflowId) {
+            await db
+                .update(tasks)
+                .set({
+                    status: "failed",
+                    error: serializeTaskErrorForDb({
+                        message: "Workflow task missing workflowId",
+                        errorCode: "workflow_invalid",
+                    }),
+                })
+                .where(eq(tasks.id, taskId));
             notifyTask(
                 taskId,
                 WorkflowStatus.WORKFLOW_FAILED,
@@ -137,6 +168,16 @@ export async function dispatchTask(taskId: string): Promise<void> {
             where: eq(workflows.id, task.workflowId),
         });
         if (!wf?.executable) {
+            await db
+                .update(tasks)
+                .set({
+                    status: "failed",
+                    error: serializeTaskErrorForDb({
+                        message: "Workflow not found or has no executable data",
+                        errorCode: "workflow_invalid",
+                    }),
+                })
+                .where(eq(tasks.id, taskId));
             notifyTask(
                 taskId,
                 WorkflowStatus.WORKFLOW_FAILED,
@@ -167,6 +208,17 @@ export async function dispatchTask(taskId: string): Promise<void> {
 export async function executeTask(taskId: string): Promise<void> {
     const taskData = await loadTaskData(taskId);
     if (!taskData) {
+        const db = await getDb();
+        await db
+            .update(tasks)
+            .set({
+                status: "failed",
+                error: serializeTaskErrorForDb({
+                    message: "Task not found or expired",
+                    errorCode: "task_not_found",
+                }),
+            })
+            .where(eq(tasks.id, taskId));
         notifyTask(
             taskId,
             TaskStatus.FAILED,
@@ -190,19 +242,6 @@ export async function executeTask(taskId: string): Promise<void> {
     );
     if (missing) {
         const failMsg = `${missing.key} is not set — add it in TongFlow Settings.`;
-        notifyTask(
-            taskId,
-            TaskStatus.FAILED,
-            {
-                message: failMsg,
-                errorCode: "missing_api_key",
-                errorParams: {
-                    key: missing.key,
-                    ...(missing.url && { url: missing.url }),
-                },
-            },
-            taskData.nodeId,
-        );
         const preflightDb = await getDb();
         await preflightDb
             .update(tasks)
@@ -218,6 +257,19 @@ export async function executeTask(taskId: string): Promise<void> {
                 }),
             })
             .where(eq(tasks.id, taskId));
+        notifyTask(
+            taskId,
+            TaskStatus.FAILED,
+            {
+                message: failMsg,
+                errorCode: "missing_api_key",
+                errorParams: {
+                    key: missing.key,
+                    ...(missing.url && { url: missing.url }),
+                },
+            },
+            taskData.nodeId,
+        );
         return;
     }
 
@@ -284,12 +336,6 @@ export async function executeTask(taskId: string): Promise<void> {
             logger.info(
                 `[TaskRunner] task=${taskId} plugin returned success=false: ${failMsg}`,
             );
-            notifyTask(
-                taskId,
-                TaskStatus.FAILED,
-                result as Record<string, unknown>,
-                taskData.nodeId,
-            );
             await db
                 .update(tasks)
                 .set({
@@ -308,6 +354,12 @@ export async function executeTask(taskId: string): Promise<void> {
                     }),
                 })
                 .where(eq(tasks.id, taskId));
+            notifyTask(
+                taskId,
+                TaskStatus.FAILED,
+                result as Record<string, unknown>,
+                taskData.nodeId,
+            );
         } else {
             logger.info(
                 `[TaskRunner] task=${taskId} plugin returned success=true`,
@@ -327,12 +379,6 @@ export async function executeTask(taskId: string): Promise<void> {
                     );
                 }
             }
-            notifyTask(
-                taskId,
-                TaskStatus.COMPLETED,
-                result as Record<string, unknown>,
-                taskData.nodeId,
-            );
             await db
                 .update(tasks)
                 .set({
@@ -340,6 +386,12 @@ export async function executeTask(taskId: string): Promise<void> {
                     result: JSON.stringify(result),
                 })
                 .where(eq(tasks.id, taskId));
+            notifyTask(
+                taskId,
+                TaskStatus.COMPLETED,
+                result as Record<string, unknown>,
+                taskData.nodeId,
+            );
         }
     } catch (error) {
         if (controller.signal.aborted) return;
@@ -350,6 +402,14 @@ export async function executeTask(taskId: string): Promise<void> {
             error instanceof Error && error.stack ? error.stack : errorMsg;
         logger.error(`[TaskRunner] Task ${taskId} failed:\n${errorStack}`);
 
+        const db = await getDb();
+        await db
+            .update(tasks)
+            .set({
+                status: "failed",
+                error: serializeTaskErrorForDb({ message: errorMsg }),
+            })
+            .where(eq(tasks.id, taskId));
         notifyTask(
             taskId,
             TaskStatus.FAILED,
@@ -359,15 +419,6 @@ export async function executeTask(taskId: string): Promise<void> {
             },
             taskData.nodeId,
         );
-
-        const db = await getDb();
-        await db
-            .update(tasks)
-            .set({
-                status: "failed",
-                error: serializeTaskErrorForDb({ message: errorMsg }),
-            })
-            .where(eq(tasks.id, taskId));
     } finally {
         removeTask(taskId);
     }

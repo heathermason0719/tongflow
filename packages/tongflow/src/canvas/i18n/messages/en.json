@@ -171,7 +171,9 @@
             "taskCompleted": "Task completed",
             "taskFailed": "Task failed",
             "taskFailedWithMsg": "Task failed: {error}",
-            "level": "Level {level}"
+            "level": "Level {level}",
+            "batchReconnecting": "Connection interrupted. Recovering background task status without resubmitting.",
+            "batchSubmitFailed": "Batch submission was not fully confirmed. Recover existing results before retrying."
         },
         "dialog": {
             "myWorkflows": "My Workflows",
@@ -992,7 +994,10 @@
                 "speechRate": "Estimated characters per second",
                 "maxChars": "Maximum characters per segment",
                 "durationHint": "Duration is an estimate (45 seconds by default). Reduce the character budget for slow speech, English or pauses. Qwen Audio reserves headroom below its 120-second limit and space for voice instructions.",
-                "clearReference": "Clear local reference"
+                "clearReference": "Clear local reference",
+                "recoverResults": "Recover existing results",
+                "noRecoverableResults": "No full batch matches the current script, voice and model. Nothing was regenerated.",
+                "recoveredResults": "Found {count} persisted tasks. Restoring actual states without regeneration."
             },
             "segmentDraft": {
                 "title": "Review and edit segment draft",

@@ -165,7 +165,11 @@ export function WorkflowTitleMenu() {
             setIsSaveAsMode(false);
         } catch (error) {
             logger.error("Save failed:", error);
-            showErrorToast({ message: t("saveFailed") });
+            showErrorToast({
+                message: t("saveFailed"),
+                detail: error instanceof Error ? error.message : String(error),
+                id: "workflow-save-failed",
+            });
         } finally {
             setSaving(false);
         }

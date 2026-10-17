@@ -50,7 +50,9 @@ export interface GetWorkflowResponse {
 export async function saveWorkflow(
     data: SaveWorkflowRequest,
 ): Promise<SaveWorkflowResponse> {
-    return await apiPost<SaveWorkflowResponse>("/api/workspace/save", data);
+    return await apiPost<SaveWorkflowResponse>("/api/workspace/save", data, {
+        showErrorToast: false,
+    });
 }
 
 export async function listWorkflows(
@@ -74,7 +76,7 @@ export async function updateWorkflow(
     id: number,
     data: Partial<SaveWorkflowRequest>,
 ): Promise<void> {
-    await apiPut(`/api/workspace/${id}`, data);
+    await apiPut(`/api/workspace/${id}`, data, { showErrorToast: false });
 }
 
 export interface WorkflowMaterialsResponse {

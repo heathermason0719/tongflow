@@ -171,7 +171,9 @@
             "taskCompleted": "任务完成",
             "taskFailed": "任务失败",
             "taskFailedWithMsg": "任务失败：{error}",
-            "level": "层级 {level}"
+            "level": "层级 {level}",
+            "batchReconnecting": "连接中断，任务仍在后台执行；正在恢复状态，不会重新提交。",
+            "batchSubmitFailed": "批次未全部确认提交，请恢复已有结果后检查；不会自动重复生成。"
         },
         "dialog": {
             "myWorkflows": "我的工作流",
@@ -992,7 +994,10 @@
                 "speechRate": "估算语速（字/秒）",
                 "maxChars": "每段字数上限",
                 "durationHint": "时长为估算，默认约45秒。慢速、英文或停顿多时请降低字数。Qwen Audio按120秒输出上限留余量，并预留声音提示词长度。",
-                "clearReference": "清除本地参考声音"
+                "clearReference": "清除本地参考声音",
+                "recoverResults": "恢复已有结果",
+                "noRecoverableResults": "没有找到与当前稿件、声音和模型匹配的完整批次；未重新生成。",
+                "recoveredResults": "已找到 {count} 个持久化任务，正在同步实际状态；未重新生成。"
             },
             "segmentDraft": {
                 "title": "审阅与编辑分段工作稿",

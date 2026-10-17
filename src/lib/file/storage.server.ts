@@ -27,6 +27,15 @@ export interface StorageDriver {
     ): Promise<string>;
     /** Read bytes by fileKey. Throws on missing files and invalid keys. */
     readFile(fileKey: string): Promise<Buffer>;
+    /** Open a seekable stream without buffering a whole local media file. */
+    openRead?(fileKey: string): Promise<{
+        size: number;
+        stream(
+            start: number,
+            end: number,
+            signal?: AbortSignal,
+        ): ReadableStream<Uint8Array>;
+    }>;
     /**
      * True when files do not live on the local uploads dir. The engine
      * delegate then routes the SDK engine's asset IO through the

@@ -8,6 +8,12 @@ import { apiGet, apiPost } from "./client";
 export interface TaskRecord {
     id: string;
     nodeId: string;
+    pluginId: string;
+    model?: string | null;
+    params?: Record<string, unknown> | null;
+    batchId?: string | null;
+    batchIndex?: number | null;
+    inputSignature?: string | null;
     feature: string;
     prompt: Record<string, unknown>;
     status: "pending" | "processing" | "completed" | "failed" | "cancelled";
@@ -29,6 +35,9 @@ export interface CreateTaskRequest {
     prompt: Record<string, unknown>;
     nodeId: string;
     workflowId?: number;
+    batchId?: string;
+    batchIndex?: number;
+    inputSignature?: string;
 }
 
 export interface CreateTaskResponse {
@@ -40,8 +49,13 @@ export interface CreateTaskResponse {
  */
 export async function createTask(
     config: CreateTaskRequest,
+    options?: { showErrorToast?: boolean },
 ): Promise<CreateTaskResponse> {
-    return await apiPost<CreateTaskResponse>("/api/task/create", config);
+    return await apiPost<CreateTaskResponse>(
+        "/api/task/create",
+        config,
+        options,
+    );
 }
 
 export interface ListTasksResponse {
@@ -82,5 +96,8 @@ export async function updateTaskStatus(
     return await apiPost<UpdateStatusResponse>(
         "/api/task/update-status",
         request,
+        // The server already owns terminal state. A backup write failing must
+        // never turn a successful model task into sixteen timeout error toasts.
+        { showErrorToast: false },
     );
 }

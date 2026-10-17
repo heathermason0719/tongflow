@@ -4,6 +4,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { logger } from "tongflow";
 import { getDb } from "@/db";
 import { workflows } from "@/db/schema";
+import { workflowSaveFailure } from "@/lib/workflow-save-error";
 
 /**
  * POST /api/workspace/save
@@ -87,11 +88,8 @@ export async function POST(request: NextRequest) {
             workflowId: resultId,
         });
     } catch (error) {
-        logger.error("Error saving workflow:", error);
-
-        return NextResponse.json(
-            { error: "Failed to save workflow" },
-            { status: 500 },
-        );
+        const failure = workflowSaveFailure(error);
+        logger.error(`[workflow-save:${failure.requestId}]`, error);
+        return NextResponse.json(failure, { status: 500 });
     }
 }

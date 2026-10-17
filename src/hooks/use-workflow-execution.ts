@@ -531,7 +531,11 @@ export function useWorkflowExecution(
             handleExecute(result.workflowId);
         } catch (error) {
             logger.error("[workflow-exec] Save failed:", error);
-            showErrorToast({ message: t("saveFailed") });
+            showErrorToast({
+                message: t("saveFailed"),
+                detail: error instanceof Error ? error.message : String(error),
+                id: "workflow-save-failed",
+            });
         } finally {
             setIsSaving(false);
         }

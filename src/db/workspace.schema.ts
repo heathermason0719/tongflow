@@ -38,6 +38,10 @@ export const tasks = sqliteTable(
         // Advanced parameters (JSON object, plugin's TONGFLOW_SLOT_PARAMS keys);
         // null = plugin defaults
         params: text("params"),
+        // Batch identity and original order survive refreshes and lost UI state.
+        batchId: text("batch_id"),
+        batchIndex: integer("batch_index"),
+        inputSignature: text("input_signature"),
         prompt: text("prompt").notNull(), // JSON string (business fields only)
         status: text("status").notNull().default("pending"),
         progress: integer("progress").default(0).notNull(),

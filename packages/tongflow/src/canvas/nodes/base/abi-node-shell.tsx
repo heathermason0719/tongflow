@@ -7,10 +7,12 @@
  */
 
 import type { ReactNode } from "react";
+import { useTranslations } from "use-intl";
 import type { BaseNodeData, NodeSlot } from "../../../core";
 import { useAbiExecution } from "../../hooks/use-abi-execution";
 import type { UseAbiFormReturn } from "../../hooks/use-abi-form";
 import type { Task } from "../../hooks/use-task";
+import { Button } from "../../ui/button";
 
 import { AbiHandles } from "./abi-handles";
 import { BaseNodeShell } from "./base-node-shell";
@@ -75,6 +77,7 @@ export function AbiNodeShell<F extends NodeSlot>({
     onTaskUpdate,
     transformPrompts,
 }: AbiNodeShellProps<F>) {
+    const recoveryT = useTranslations("Workspace.nodes.speechFlow");
     const exec = useAbiExecution({
         feature,
         form,
@@ -110,6 +113,27 @@ export function AbiNodeShell<F extends NodeSlot>({
             setMissingPluginOpen={exec.setMissingPluginOpen}
         >
             {children}
+            {feature === "text-gen-speech-clone" && (
+                <div className="mx-4 mb-4 nodrag space-y-2">
+                    <Button
+                        variant="outline"
+                        disabled={exec.recovering || exec.loading}
+                        onClick={() => void exec.recoverResults()}
+                        data-testid="recover-task-results"
+                    >
+                        {recoveryT("recoverResults")}
+                    </Button>
+                    {exec.recoveryMessage && (
+                        <p
+                            role="alert"
+                            className="text-sm"
+                            data-testid="recovery-status"
+                        >
+                            {exec.recoveryMessage}
+                        </p>
+                    )}
+                </div>
+            )}
             {autoHandles && <AbiHandles feature={feature} />}
         </BaseNodeShell>
     );

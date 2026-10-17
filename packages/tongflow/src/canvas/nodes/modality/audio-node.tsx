@@ -130,11 +130,7 @@ const FullScreenWaterfallAudioModal = ({
             return (
                 <div className="relative aspect-square overflow-hidden rounded-md border border-gray-300 dark:border-gray-600 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 shadow-md hover:shadow-lg transition-shadow cursor-pointer">
                     {url && (
-                        <audio
-                            src={url}
-                            className="hidden"
-                            preload="metadata"
-                        />
+                        <audio src={url} className="hidden" preload="none" />
                     )}
                     <div className="flex h-full w-full flex-col items-center justify-center p-2 text-center">
                         <Music className="h-8 w-8 text-blue-600 dark:text-blue-400" />
@@ -316,7 +312,7 @@ const AudioNode = ({ selected, data }: AudioNodeRfProps) => {
                                 controls
                                 controlsList="nodownload"
                                 className="w-full"
-                                preload="metadata"
+                                preload="none"
                                 onError={() => setAudioError(true)}
                                 onMouseEnter={() =>
                                     singleAudioRef.current?.play()
@@ -384,7 +380,7 @@ const AudioNode = ({ selected, data }: AudioNodeRfProps) => {
                                                 }}
                                                 src={url}
                                                 className="hidden"
-                                                preload="metadata"
+                                                preload="none"
                                             />
                                         )}
                                         <div className="flex h-full w-full flex-col items-center justify-center p-2 text-center">

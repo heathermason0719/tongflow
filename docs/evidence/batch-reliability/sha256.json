@@ -1,0 +1,14 @@
+{
+    "05-batch-source-audio-correspondence.png": "f37368804d7fcee9f576ab0d8eac290703a1394fda30e69d3c5c4cd95709143e",
+    "06-human-edits-boundaries-and-order.png": "417556a9466ba629848564acf3fa8e119ec58e4b244a90c8c107c49b98152368",
+    "08-saved-and-reloaded.png": "8a68dbd4f10fd3e64beabe7944bbe3d5e24f2c39092ee460c1faf03c83ba132e",
+    "README.md": "50d6c6afd90a95f56ff2a4ec85964182983d40482201aebd4b729e4fff6508db",
+    "actual-task-requests.json": "8d7c5dde4a8455b1d69a38fee17b7f279e9b88ff70a6b6fedeb35f6513c0ce9b",
+    "baseline-reproduction.json": "599c173aa3e4b29ee140a5acbcdd983a62760697faf8e8c1a966269cdb7a8a10",
+    "document-audio-regression.json": "02fda5378054f0ad925407789c0d1538219175b70b2527dc4a49877f6fddf496",
+    "existing-audio-verification.json": "1e513181034981a37d2bfc9d8c0858683ea78c4669bd7aa116ae9fae33ecd50f",
+    "live-runtime-verification.json": "223d478bac0d5d259e73633709966e8c6163329aa89417cdeaa5498a66e9e225",
+    "provider-requests.json": "436b1b99c9ef4b86b7c91a99ea5843e825d0ac07a84961ff38bdc03544b1360f",
+    "saved-inflight-workflow.json": "e670505fa455f3e90eb1efd267f27918e1dad177f7b4d1e90cb8b690f2f547ac",
+    "simulated-acceptance.json": "52f7fd29807f116628cb08c1884ee2e12e7b5439cab2e03be9044837d9cd3b56"
+}

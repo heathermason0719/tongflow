@@ -28,9 +28,22 @@ export async function POST(request: NextRequest) {
             prompt: Record<string, unknown>;
             nodeId: string;
             workflowId?: number;
+            batchId?: string;
+            batchIndex?: number;
+            inputSignature?: string;
         };
-        const { feature, pluginId, model, params, prompt, nodeId, workflowId } =
-            body;
+        const {
+            feature,
+            pluginId,
+            model,
+            params,
+            prompt,
+            nodeId,
+            workflowId,
+            batchId,
+            batchIndex,
+            inputSignature,
+        } = body;
 
         if (!feature || typeof feature !== "string") {
             return NextResponse.json(
@@ -129,6 +142,13 @@ export async function POST(request: NextRequest) {
                 status: "pending",
                 progress: 0,
                 workflowId: workflowId ?? null,
+                batchId: typeof batchId === "string" ? batchId : null,
+                batchIndex:
+                    Number.isSafeInteger(batchIndex) && (batchIndex ?? -1) >= 0
+                        ? batchIndex
+                        : null,
+                inputSignature:
+                    typeof inputSignature === "string" ? inputSignature : null,
             });
         } catch (dbError) {
             logger.error("[Task] Database write failed:", dbError);
