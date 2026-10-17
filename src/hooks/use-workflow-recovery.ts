@@ -15,6 +15,8 @@ import {
     emitSSEConnected,
     emitSSETaskMessage,
     getTaskWaitUrl,
+    publishOutput,
+    useFlow,
     useTaskStore,
 } from "tongflow/canvas";
 
@@ -112,6 +114,36 @@ export function useWorkflowRecovery(options: UseWorkflowRecoveryOptions = {}) {
                         onNodeStatusChange?.(message.nodeId, "completed");
                         const output = message.data?.output;
                         if (output) {
+                            const flow = useFlow.getState();
+                            const node = flow.nodes.find(
+                                (n) => n.id === message.nodeId,
+                            );
+                            const signature = node?.data.activeInputSignature;
+                            if (typeof signature === "string") {
+                                publishOutput(
+                                    message.nodeId,
+                                    output,
+                                    signature,
+                                );
+                                const current = useFlow
+                                    .getState()
+                                    .nodes.find((n) => n.id === message.nodeId);
+                                if (
+                                    current &&
+                                    Array.isArray(message.data?.speechResults)
+                                ) {
+                                    useFlow.getState().updates(
+                                        current.id,
+                                        {
+                                            ...current.data,
+                                            speechResults:
+                                                message.data.speechResults,
+                                            speechInputSignature: signature,
+                                        },
+                                        { history: false },
+                                    );
+                                }
+                            }
                             onNodeDataUpdate?.(message.nodeId, {
                                 fileKeys: output.fileKeys,
                                 texts: output.texts,

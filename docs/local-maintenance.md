@@ -21,6 +21,10 @@ OpenAI 插件 `fix/local-document-extraction`。使用本轮最终版本时须�
 不能只恢复旧的兼容基线。功能范围、使用方法和离线浏览器验收见
 [音频下载与文档处理](audio-and-documents.zh.md)。
 
+文案到多段复刻配音的后续开发分支为主仓库 `feat/reusable-voice-workflow`、
+OpenAI 插件 `feat/speech-safe-splitting`，均以上述维护分支为基线。
+使用方法和验证边界见[完整文案到复刻配音](script-to-cloned-speech.zh.md)。
+
 主仓库保存兼容 Key 的完整提取、模型 ID 编辑及提交逻辑、多语言说明和回归测试。
 插件仓库保存兼容端点直接使用指定模型的修复、配置说明与两项离线回归。
 Key、工作台 SQLite 数据、上传内容、生产构建和浏览器证据继续留在 Git 忽略目录。

@@ -21,6 +21,7 @@ import type { WorkflowExecutor } from "tongflow";
 import {
     exportWorkflow,
     getAbiNodeBySlot,
+    inputSignature,
     logger,
     NodeStatus,
     resolveAbiOutputMappings,
@@ -29,11 +30,11 @@ import {
 } from "tongflow";
 import type { SSEMessage } from "tongflow/canvas";
 import {
-    applyResolvedOutputRoutes,
     emitSSEConnected,
     emitSSETaskMessage,
     getTaskStopUrl,
     getTaskWaitUrl,
+    publishOutput,
     saveFromTask,
     showErrorToast,
     TASK_CANCEL_REQUEST_EVENT,
@@ -132,6 +133,7 @@ export function useWorkflowExecution(
     // exactly the affected components once, when the run reaches a terminal
     // state (never mid-run, so results appearing don't fight the user).
     const runTouchedRef = useRef<Set<string>>(new Set());
+    const runInputSignatures = useRef<Map<string, string>>(new Map());
     const tidyRunComponents = useCallback(() => {
         const touched = [...runTouchedRef.current];
         runTouchedRef.current = new Set();
@@ -160,7 +162,9 @@ export function useWorkflowExecution(
             if (!abiNode) return;
             const routes = resolveAbiOutputMappings(abiNode);
             if (routes.length === 0) return;
-            applyResolvedOutputRoutes(sourceNodeId, output, routes, expands);
+            const signature = runInputSignatures.current.get(sourceNodeId);
+            if (!signature) return;
+            publishOutput(sourceNodeId, output, signature);
             runTouchedRef.current.add(sourceNodeId);
         },
         [expands],
@@ -175,6 +179,7 @@ export function useWorkflowExecution(
             clearNodeExecutionStatus();
             setWorkflowExecutionStatus("running");
             runTouchedRef.current = new Set();
+            runInputSignatures.current = new Map();
 
             try {
                 const response = await fetch("/api/workflow/execute", {
@@ -237,6 +242,37 @@ export function useWorkflowExecution(
                             case NodeStatus.NODE_STARTED:
                             case NodeStatus.NODE_RUNNING:
                                 if (message.nodeId) {
+                                    if (
+                                        !runInputSignatures.current.has(
+                                            message.nodeId,
+                                        )
+                                    ) {
+                                        const flow = useFlow.getState();
+                                        const node = flow.nodes.find(
+                                            (n) => n.id === message.nodeId,
+                                        );
+                                        if (node) {
+                                            const signature = inputSignature(
+                                                node.id,
+                                                flow.nodes,
+                                                flow.edges,
+                                            );
+                                            runInputSignatures.current.set(
+                                                node.id,
+                                                signature,
+                                            );
+                                            flow.updates(
+                                                node.id,
+                                                {
+                                                    ...node.data,
+                                                    outputPending: true,
+                                                    activeInputSignature:
+                                                        signature,
+                                                },
+                                                { history: false },
+                                            );
+                                        }
+                                    }
                                     setNodeExecutionStatus(
                                         message.nodeId,
                                         "running",
@@ -266,6 +302,31 @@ export function useWorkflowExecution(
                                             message.nodeId,
                                             output as Record<string, unknown>,
                                         );
+                                    }
+                                    if (
+                                        Array.isArray(
+                                            message.data?.speechResults,
+                                        )
+                                    ) {
+                                        const flow = useFlow.getState();
+                                        const node = flow.nodes.find(
+                                            (n) => n.id === message.nodeId,
+                                        );
+                                        if (node)
+                                            flow.updates(
+                                                node.id,
+                                                {
+                                                    ...node.data,
+                                                    speechResults:
+                                                        message.data
+                                                            .speechResults,
+                                                    speechInputSignature:
+                                                        runInputSignatures.current.get(
+                                                            node.id,
+                                                        ),
+                                                },
+                                                { history: false },
+                                            );
                                     }
                                 }
                                 break;

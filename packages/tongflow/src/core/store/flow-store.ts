@@ -497,6 +497,9 @@ export function createFlowSlice(
             if (!sourceIsDataNode) {
                 for (const child of existingChildNodes) {
                     if (!child.type) continue;
+                    // Explicitly edited text is now a manual source. A producer
+                    // rerun creates a fresh result instead of overwriting it.
+                    if (child.data.manualTextOverride === true) continue;
                     const bucket = existingChildrenByType.get(child.type);
                     if (bucket) bucket.push(child);
                     else existingChildrenByType.set(child.type, [child]);

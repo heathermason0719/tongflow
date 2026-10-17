@@ -16,6 +16,7 @@ import {
     buildPrompts,
     collectHandleValues,
     getAbiNodeBySlot,
+    inputSignature,
     logger,
     parseTargetHandleId,
     promptMissingRequired,
@@ -26,6 +27,8 @@ import {
     applyResolvedOutputRoutes,
     normalizeTaskPayloadData,
 } from "../lib/task/payload";
+import { publishOutput } from "../lib/task/publish-output";
+import type { SpeechResult } from "../nodes/base/speech-results";
 import type { SSEMessageData } from "../types/sse";
 import type { UseAbiFormReturn } from "./use-abi-form";
 import useFlow from "./use-flow";
@@ -119,6 +122,13 @@ export function useAbiExecution<F extends NodeSlot>(
     const spec = useNodeAbiSpec(feature);
     const specRef = useRef(spec);
     specRef.current = spec;
+    const batchRef = useRef<{
+        signature: string;
+        prompts: Record<string, unknown>[];
+        outputs: Map<number, Record<string, unknown>>;
+        terminal: Set<number>;
+        speechResults: SpeechResult[];
+    } | null>(null);
 
     /* ---------- node.data sync --------------------------------------- */
 
@@ -296,7 +306,75 @@ export function useAbiExecution<F extends NodeSlot>(
                 }
             }
 
-            if (task?.status === "COMPLETED") {
+            const batch = batchRef.current;
+            const index = task.batchIndex;
+            if (
+                batch &&
+                index !== undefined &&
+                task.input &&
+                JSON.stringify(task.input) ===
+                    JSON.stringify(batch.prompts[index]) &&
+                ["COMPLETED", "FAILED", "CANCELLED"].includes(task.status)
+            ) {
+                if (batch.terminal.has(index)) return;
+                batch.terminal.add(index);
+                const payload = normalizeTaskPayloadData(task.data) ?? {};
+                if (task.status === "COMPLETED")
+                    batch.outputs.set(index, payload);
+                if (batch.speechResults.length) {
+                    const audio = payload.audio as
+                        | { file_key?: string }
+                        | string
+                        | undefined;
+                    batch.speechResults[index] = {
+                        ...batch.speechResults[index],
+                        status: task.status,
+                        ...(task.status === "COMPLETED"
+                            ? {
+                                  audio:
+                                      typeof audio === "string"
+                                          ? audio
+                                          : audio?.file_key,
+                              }
+                            : { error: task.error }),
+                    };
+                    const current = useFlow
+                        .getState()
+                        .nodes.find((n) => n.id === nodeId);
+                    if (current)
+                        flowUpdates(
+                            nodeId,
+                            {
+                                ...current.data,
+                                speechResults: [...batch.speechResults],
+                                speechInputSignature: batch.signature,
+                            },
+                            { history: false },
+                        );
+                }
+                if (batch.terminal.size === batch.prompts.length) {
+                    const abi = getAbiNodeBySlot(feature);
+                    const routes = abi ? resolveAbiOutputMappings(abi) : [];
+                    const payload: Record<string, unknown> = {};
+                    for (const route of routes) {
+                        const values: unknown[] = [];
+                        for (let i = 0; i < batch.prompts.length; i++) {
+                            const value =
+                                batch.outputs.get(i)?.[route.sourceField];
+                            if (value != null)
+                                values.push(
+                                    ...(Array.isArray(value) ? value : [value]),
+                                );
+                        }
+                        payload[route.sourceField] = values;
+                    }
+                    publishOutput(nodeId, payload, batch.signature);
+                    useFlow.getState().autoLayout([nodeId], { history: false });
+                }
+                return;
+            }
+
+            if (task?.status === "COMPLETED" && !batch) {
                 const payload =
                     normalizeTaskPayloadData(task?.data) ??
                     (task?.data as Record<string, unknown> | undefined);
@@ -413,6 +491,37 @@ export function useAbiExecution<F extends NodeSlot>(
         const params = resolveActiveParams();
 
         try {
+            const signature = inputSignature(nodeId, nodes, edges);
+            const speechResults: SpeechResult[] =
+                feature === "text-gen-speech-clone"
+                    ? prompts.map((p) => ({
+                          text: String(p.text),
+                          refAudio: String(p.ref_audio),
+                          status: "PENDING",
+                      }))
+                    : [];
+            batchRef.current = {
+                signature,
+                prompts,
+                outputs: new Map(),
+                terminal: new Set(),
+                speechResults,
+            };
+            const current = useFlow
+                .getState()
+                .nodes.find((n) => n.id === nodeId);
+            if (current)
+                flowUpdates(
+                    nodeId,
+                    {
+                        ...current.data,
+                        outputPending: true,
+                        ...(speechResults.length
+                            ? { speechResults, speechInputSignature: signature }
+                            : {}),
+                    },
+                    { history: false },
+                );
             const taskConfigs = prompts.map((prompt) => ({
                 feature,
                 pluginId,

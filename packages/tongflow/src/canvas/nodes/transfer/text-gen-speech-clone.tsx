@@ -5,31 +5,36 @@ import type { TongflowPluginNodeProps } from "../../../core";
 import { logger } from "../../../core";
 import { SpeakerVoiceRecorder } from "../../components/speaker-voice-recorder";
 import { useAbiForm } from "../../hooks/use-abi-form";
+import { useEffectiveInputs } from "../../hooks/use-effective-inputs";
 import { useUpload } from "../../hooks/use-upload";
 import { getFileUrl } from "../../lib/file/url";
 import { Button } from "../../ui/button";
 import { Card } from "../../ui/card";
 import { Label } from "../../ui/label";
-
 import { AbiNodeShell } from "../base/abi-node-shell";
 import { LanguageSelect } from "../base/language-select";
-
-// `ref_audio` is an Asset $ref in the ABI (default = upstream handle). This
-// transfer node owns reference audio via local upload/record → config override.
-// Wired text+audio uses `textGenSpeechCloneComposeNode` (default handles).
+import { SpeechResults } from "../base/speech-results";
 
 const TextGenSpeechCloneNode = ({
     selected,
     data,
 }: TongflowPluginNodeProps<
     "text-gen-speech-clone",
-    "textGenSpeechCloneNode"
+    "textGenSpeechCloneNode" | "textGenSpeechCloneComposeNode"
 >) => {
     const t = useTranslations("Workspace.nodes");
     const form = useAbiForm("text-gen-speech-clone");
-    const texts = data.texts ?? [];
-
-    const refAudio = data.ref_audio as string | undefined;
+    const input = useEffectiveInputs("text-gen-speech-clone", form.state);
+    const texts = input.prompts
+        .map((p) => p.text)
+        .filter(
+            (x): x is string => typeof x === "string" && x.trim().length > 0,
+        );
+    const audioSources = input.sources("ref_audio");
+    const textSources = input.sources("text");
+    const refAudio = (
+        audioSources.length ? input.values.ref_audio : form.state.ref_audio
+    ) as string | undefined;
 
     // ABI types `ref_audio` as Asset; canvas stores a file_key string until
     // `prepareAssetInput` materializes bytes for Modal.
@@ -93,7 +98,7 @@ const TextGenSpeechCloneNode = ({
                             variant="outline"
                             size="icon"
                             title={t("common.uploadVoice")}
-                            disabled={isUploading}
+                            disabled={isUploading || audioSources.length > 0}
                             asChild
                         >
                             <span>
@@ -107,11 +112,14 @@ const TextGenSpeechCloneNode = ({
                                 variant="outline"
                                 size="icon"
                                 title={t("common.recordVoice")}
+                                disabled={audioSources.length > 0}
                             >
                                 <Mic className="w-4 h-4" />
                             </Button>
                         }
-                        onChange={(key) => setVoice(key)}
+                        onChange={(key) => {
+                            if (!audioSources.length) setVoice(key);
+                        }}
                     />
                     <Button
                         type="button"
@@ -138,6 +146,27 @@ const TextGenSpeechCloneNode = ({
                 <div className="mb-4 text-xs text-muted-foreground truncate">
                     {refAudio ? refAudio : t("common.noReferenceAudio")}
                 </div>
+                <p
+                    className="mb-3 text-xs text-muted-foreground"
+                    data-testid="reference-source"
+                >
+                    {audioSources.length
+                        ? t("speechFlow.connectedReference", {
+                              source: audioSources
+                                  .map((n) => n.data.label || n.id)
+                                  .join(", "),
+                          })
+                        : t("speechFlow.localReference")}
+                </p>
+                {!audioSources.length && refAudio && (
+                    <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => form.patch({ ref_audio: undefined })}
+                    >
+                        {t("speechFlow.clearReference")}
+                    </Button>
+                )}
                 <div className="mb-4">
                     <label
                         htmlFor="ref-text-input"
@@ -152,7 +181,24 @@ const TextGenSpeechCloneNode = ({
                         {...form.register("ref_text")}
                     />
                 </div>
-                {texts && texts.length > 0 && (
+                <p
+                    className="mb-2 text-xs text-muted-foreground"
+                    data-testid="text-source"
+                >
+                    {textSources.length
+                        ? t("speechFlow.connectedText", {
+                              source: textSources
+                                  .map((n) => n.data.label || n.id)
+                                  .join(", "),
+                          })
+                        : t("speechFlow.connectText")}
+                </p>
+                {textSources.length > 0 && texts.length === 0 && (
+                    <p className="text-xs text-amber-600">
+                        {t("speechFlow.upstreamChanged")}
+                    </p>
+                )}
+                {texts.length > 0 && (
                     <div className="space-y-2">
                         <Label className="text-sm font-medium text-muted-foreground">
                             {t("common.inputText")} ({texts.length})
@@ -161,8 +207,12 @@ const TextGenSpeechCloneNode = ({
                             {texts.map((text, index) => (
                                 <div
                                     key={`${index}-${text.slice(0, 48)}`}
-                                    className="text-sm text-foreground p-2 bg-background rounded border border-border/50 line-clamp-2"
+                                    data-testid="effective-speech-text"
+                                    className="text-sm text-foreground p-2 bg-background rounded border border-border/50 whitespace-pre-wrap"
                                 >
+                                    <span className="text-muted-foreground">
+                                        {index + 1}.{" "}
+                                    </span>
                                     {text}
                                 </div>
                             ))}
@@ -170,6 +220,7 @@ const TextGenSpeechCloneNode = ({
                     </div>
                 )}
             </Card>
+            <SpeechResults data={data} signature={input.signature} />
         </AbiNodeShell>
     );
 };

@@ -556,6 +556,7 @@ export class WorkflowExporter {
             if (!targetNode) continue;
             const targetType = targetNode.type ?? "";
             if (!isDataNode(targetType)) continue;
+            if (targetNode.data.manualTextOverride === true) continue;
 
             // Prefer the explicit sourceHandle (`out:<field>`).
             const handleField = parseSourceHandleId(edge.sourceHandle);
@@ -859,6 +860,11 @@ export class WorkflowExporter {
         feature: string;
         edgeSourceHandle: string | undefined;
     } | null {
+        if (
+            this.nodes.find((n) => n.id === dataNodeId)?.data
+                .manualTextOverride === true
+        )
+            return null;
         for (const edge of this.edges) {
             if (edge.target !== dataNodeId) continue;
             const source = this.nodes.find((n) => n.id === edge.source);

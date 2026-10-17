@@ -90,6 +90,7 @@ const mock = http.createServer(async (req, res) => {
             }
             calls.push({
                 kind: "split-text",
+                sourceChars: Array.from(text).length,
                 model: payload.model,
                 sourceSha256: sha(Buffer.from(text)),
                 segments: texts.length,
@@ -500,8 +501,8 @@ try {
         );
         assert.deepEqual(segments, split.result.texts);
         assert.equal(
-            sha(Buffer.from(segments.join("").replace(/\s/gu, ""))),
-            sha(Buffer.from(expected.replace(/\s/gu, ""))),
+            sha(Buffer.from(segments.join(""))),
+            sha(Buffer.from(expected)),
             "Split text lost, rewrote, or reordered source characters",
         );
         if (filename === "long.txt") {
@@ -648,12 +649,10 @@ try {
             assert.equal(
                 sha(
                     Buffer.from(
-                        done.data.outputs["engine-split"].texts
-                            .join("")
-                            .replace(/\s/gu, ""),
+                        done.data.outputs["engine-split"].texts.join(""),
                     ),
                 ),
-                sha(Buffer.from(expected.replace(/\s/gu, ""))),
+                sha(Buffer.from(expected)),
             );
             records.longEngineWorkflow = {
                 workflowId: engine.workflowId,
@@ -903,7 +902,12 @@ try {
         path: path.join(shots, "qwen-audio-regression.png"),
     });
     records.qwenAudioUiUnchanged = true;
-    assert.equal(calls.length, 7);
+    // Bounded long-document windows deliberately use multiple requests.
+    // Extraction/text integrity was checked above for every whole document.
+    assert.equal(calls.filter((c) => c.kind === "pdf").length, 1);
+    const splits = calls.filter((c) => c.kind === "split-text");
+    assert.ok(splits.length >= 6);
+    assert.ok(splits.every((c) => c.sourceChars <= 8000));
     assert.ok(calls.every((c) => !c.error));
     records.providerCalls = calls;
     records.status = "passed";

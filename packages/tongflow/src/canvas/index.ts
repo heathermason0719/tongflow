@@ -41,6 +41,7 @@ export * from "./lib/file/url";
 export * from "./lib/file/url-cache";
 export * from "./lib/task/api-url";
 export * from "./lib/task/payload";
+export * from "./lib/task/publish-output";
 export * from "./lib/task/sse-events";
 export * from "./lib/upload/limits";
 export * from "./lib/upload/validation";

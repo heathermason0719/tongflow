@@ -87,7 +87,11 @@ function handleEvent(taskId: string, ev: Record<string, unknown>): void {
             notifyTask(
                 taskId,
                 NodeStatus.NODE_COMPLETED,
-                { output: ev.output, label: str(ev.label) ?? "" },
+                {
+                    output: ev.output,
+                    speechResults: ev.speechResults,
+                    label: str(ev.label) ?? "",
+                },
                 nodeId,
             );
             break;

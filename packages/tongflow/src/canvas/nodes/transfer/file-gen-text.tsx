@@ -3,6 +3,7 @@ import { memo } from "react";
 import { useTranslations } from "use-intl";
 import type { TongflowPluginNodeProps } from "../../../core";
 import { useAbiForm } from "../../hooks/use-abi-form";
+import { useEffectiveInputs } from "../../hooks/use-effective-inputs";
 
 import { AbiNodeShell } from "../base/abi-node-shell";
 
@@ -12,7 +13,7 @@ const FileGenTextNode = ({
 }: TongflowPluginNodeProps<"parse-document", "fileGenTextNode">) => {
     const t = useTranslations("Workspace.nodes");
     const form = useAbiForm("parse-document");
-    const { fileKeys = [] } = data;
+    const input = useEffectiveInputs("parse-document", form.state);
 
     return (
         <AbiNodeShell
@@ -24,7 +25,7 @@ const FileGenTextNode = ({
             title={t("titles.fileGenText")}
             icon={<FileText className="h-5 w-5" />}
             executeLabel={t("actions.parseDocument")}
-            executeDisabled={!fileKeys?.length}
+            executeDisabled={!input.prompts.some((p) => Boolean(p.document))}
         />
     );
 };

@@ -1,0 +1,398 @@
+{
+    "provider": "local simulation; NOT real Bailian generation",
+    "checks": {
+        "documentExtraction": {
+            "taskId": "D77Nist-IhC14nhOnWd9Z",
+            "chars": 1250,
+            "sourceSha256": "28885a5f21c77d6bf2231a2de9076107ffc7a2f3dce69b6d92a9aed1325c7939",
+            "exact": true
+        },
+        "split": {
+            "taskId": "AhOu3H--urnzmX6DwOpyN",
+            "source": "第1站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第2站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第3站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第4站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第5站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第6站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第7站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第8站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第9站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n",
+            "segments": [
+                "第1站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。",
+                "小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第2站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。",
+                "小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。",
+                "傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第3站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。",
+                "管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n",
+                "第4站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。",
+                "小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第5站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。",
+                "小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。",
+                "傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第6站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。",
+                "管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n",
+                "第7站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。",
+                "小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第8站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。",
+                "小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。",
+                "傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第9站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n"
+            ],
+            "exact": true,
+            "chars": [89, 78, 84, 85, 81, 89, 78, 84, 85, 81, 89, 78, 84, 165]
+        },
+        "connectedByMouse": true,
+        "disconnectedAndReconnectedByMouse": true,
+        "batch": {
+            "orderedResults": [
+                {
+                    "text": "第1站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。",
+                    "refAudio": "q_Kc-FAa5s4mCanUyRbBw.wav",
+                    "status": "COMPLETED",
+                    "audio": "tasks/ddfcIUh49b7FPOGX52EEp/fujVFhhO0JK86YSmSIU-H.wav"
+                },
+                {
+                    "text": "小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第2站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。",
+                    "refAudio": "q_Kc-FAa5s4mCanUyRbBw.wav",
+                    "status": "COMPLETED",
+                    "audio": "tasks/3OMmRIxh7d8t57OT9-kAC/mdw1fuU8II26SKbrLNzFg.wav"
+                },
+                {
+                    "text": "小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。",
+                    "refAudio": "q_Kc-FAa5s4mCanUyRbBw.wav",
+                    "status": "COMPLETED",
+                    "audio": "tasks/SS8CQBa0G3ejWiLm4fqfM/QnWHyYoHt4Q71OmSgONTY.wav"
+                },
+                {
+                    "text": "傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第3站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。",
+                    "refAudio": "q_Kc-FAa5s4mCanUyRbBw.wav",
+                    "status": "COMPLETED",
+                    "audio": "tasks/KyWio4j1DWF0p1QEiBAvb/wM1P8mP4JlO2RCX5wlq88.wav"
+                },
+                {
+                    "text": "管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n",
+                    "refAudio": "q_Kc-FAa5s4mCanUyRbBw.wav",
+                    "status": "COMPLETED",
+                    "audio": "tasks/EbvC-rswLQpj04ia-jbyh/7LGZIm51Hggkkbyrs4XYI.wav"
+                },
+                {
+                    "text": "第4站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。",
+                    "refAudio": "q_Kc-FAa5s4mCanUyRbBw.wav",
+                    "status": "COMPLETED",
+                    "audio": "tasks/XZt1wq9-oZF9Ts66-MlmD/jLY3j2GCmnFLEE0-MQhfl.wav"
+                },
+                {
+                    "text": "小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第5站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。",
+                    "refAudio": "q_Kc-FAa5s4mCanUyRbBw.wav",
+                    "status": "COMPLETED",
+                    "audio": "tasks/mFjXZ3Ltx2wvLsz9fP-Rc/YUreLxRCkrQVYS4HDmz0c.wav"
+                },
+                {
+                    "text": "小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。",
+                    "refAudio": "q_Kc-FAa5s4mCanUyRbBw.wav",
+                    "status": "COMPLETED",
+                    "audio": "tasks/UrwgtI7ikkxNbp-7hi09Q/_qnOjFzx0zBra8gdw-jCb.wav"
+                },
+                {
+                    "text": "傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第6站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。",
+                    "refAudio": "q_Kc-FAa5s4mCanUyRbBw.wav",
+                    "status": "COMPLETED",
+                    "audio": "tasks/8O4SDfeYo434KMDRqY3mn/5Y1bI8bMCXsgSzfPe5AtA.wav"
+                },
+                {
+                    "text": "管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n",
+                    "refAudio": "q_Kc-FAa5s4mCanUyRbBw.wav",
+                    "status": "COMPLETED",
+                    "audio": "tasks/20xaviXBTO-LkbhtLDARb/_0KzXfuwKnipTxJfZ3GPi.wav"
+                },
+                {
+                    "text": "第7站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。",
+                    "refAudio": "q_Kc-FAa5s4mCanUyRbBw.wav",
+                    "status": "COMPLETED",
+                    "audio": "tasks/e_ssyXLhYF-kaM3rW_-dQ/m5PMDk8ZamdVJmlsxvzzv.wav"
+                },
+                {
+                    "text": "小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第8站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。",
+                    "refAudio": "q_Kc-FAa5s4mCanUyRbBw.wav",
+                    "status": "COMPLETED",
+                    "audio": "tasks/ZpQMyLJUw6JC2NIeAxrbE/6oTBqG-brRUcLrweKFLH-.wav"
+                },
+                {
+                    "text": "小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。",
+                    "refAudio": "q_Kc-FAa5s4mCanUyRbBw.wav",
+                    "status": "COMPLETED",
+                    "audio": "tasks/ODZyuMXhUdDWHGEtKmbpj/NESGyrkAsCWJxciKgbI-R.wav"
+                },
+                {
+                    "text": "傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第9站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n",
+                    "refAudio": "q_Kc-FAa5s4mCanUyRbBw.wav",
+                    "status": "COMPLETED",
+                    "audio": "tasks/527-3uARuyav_7OGpm3O6/aWk1LvKiNidNJ06bA0OwP.wav"
+                }
+            ],
+            "requests": [
+                {
+                    "kind": "tts",
+                    "model": "qwen-audio-3.1-tts-next",
+                    "text_prompt": "@voice1说：“小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第2站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。”",
+                    "referenceSha256": "4e2819683696357775e710d8a20b39212e18e0fd58cfe1a6e92cdc0f7f1d5153",
+                    "outputSha256": "a7ff407608b7a8ad657722007ba7d416e21c5fffdfdf3be44ee67692a9cd97cf"
+                },
+                {
+                    "kind": "tts",
+                    "model": "qwen-audio-3.1-tts-next",
+                    "text_prompt": "@voice1说：“第1站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。”",
+                    "referenceSha256": "4e2819683696357775e710d8a20b39212e18e0fd58cfe1a6e92cdc0f7f1d5153",
+                    "outputSha256": "32385192a203ed3f6abfb03e88cc5cf22c31c670e5e8f641d8267edbd9910076"
+                },
+                {
+                    "kind": "tts",
+                    "model": "qwen-audio-3.1-tts-next",
+                    "text_prompt": "@voice1说：“傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第6站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。”",
+                    "referenceSha256": "4e2819683696357775e710d8a20b39212e18e0fd58cfe1a6e92cdc0f7f1d5153",
+                    "outputSha256": "f235e25d32c417b4d87252c682f370e9b15234732c6b6ba8aefc4b7f8c98c091"
+                },
+                {
+                    "kind": "tts",
+                    "model": "qwen-audio-3.1-tts-next",
+                    "text_prompt": "@voice1说：“小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。”",
+                    "referenceSha256": "4e2819683696357775e710d8a20b39212e18e0fd58cfe1a6e92cdc0f7f1d5153",
+                    "outputSha256": "8264dfadc1c0e7fb77ccc16c76f2c25e22de75ef128202109e8b4403d69e547e"
+                },
+                {
+                    "kind": "tts",
+                    "model": "qwen-audio-3.1-tts-next",
+                    "text_prompt": "@voice1说：“小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第5站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。”",
+                    "referenceSha256": "4e2819683696357775e710d8a20b39212e18e0fd58cfe1a6e92cdc0f7f1d5153",
+                    "outputSha256": "3bb601f88ab8285a42175f3d56e51e11364d1161e7ada0aa42d0a0e43b605907"
+                },
+                {
+                    "kind": "tts",
+                    "model": "qwen-audio-3.1-tts-next",
+                    "text_prompt": "@voice1说：“小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。”",
+                    "referenceSha256": "4e2819683696357775e710d8a20b39212e18e0fd58cfe1a6e92cdc0f7f1d5153",
+                    "outputSha256": "122c81c52632599a5253fc7bbff7a56b7a76ed7e723024e3982813a6a3eff8e4"
+                },
+                {
+                    "kind": "tts",
+                    "model": "qwen-audio-3.1-tts-next",
+                    "text_prompt": "@voice1说：“傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第3站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。”",
+                    "referenceSha256": "4e2819683696357775e710d8a20b39212e18e0fd58cfe1a6e92cdc0f7f1d5153",
+                    "outputSha256": "c2966c905eda46d3081d3d51c34812c7df060ca3aac6895aea02aed5f36c899c"
+                },
+                {
+                    "kind": "tts",
+                    "model": "qwen-audio-3.1-tts-next",
+                    "text_prompt": "@voice1说：“第7站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。”",
+                    "referenceSha256": "4e2819683696357775e710d8a20b39212e18e0fd58cfe1a6e92cdc0f7f1d5153",
+                    "outputSha256": "7e68714b85d4d2773db9d28ae34c0aff3209e6cc29cb7ea80b9c657dc8494673"
+                },
+                {
+                    "kind": "tts",
+                    "model": "qwen-audio-3.1-tts-next",
+                    "text_prompt": "@voice1说：“小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第8站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。”",
+                    "referenceSha256": "4e2819683696357775e710d8a20b39212e18e0fd58cfe1a6e92cdc0f7f1d5153",
+                    "outputSha256": "474c3642c8494cabda1a6d0040b73dff4ca35bf907adfc0650a0307dae18df8c"
+                },
+                {
+                    "kind": "tts",
+                    "model": "qwen-audio-3.1-tts-next",
+                    "text_prompt": "@voice1说：“管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。”",
+                    "referenceSha256": "4e2819683696357775e710d8a20b39212e18e0fd58cfe1a6e92cdc0f7f1d5153",
+                    "outputSha256": "cb3cfe3439553e3281d01748b699bbb614177ace239e1cef663fce26a161cd6e"
+                },
+                {
+                    "kind": "tts",
+                    "model": "qwen-audio-3.1-tts-next",
+                    "text_prompt": "@voice1说：“管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。”",
+                    "referenceSha256": "4e2819683696357775e710d8a20b39212e18e0fd58cfe1a6e92cdc0f7f1d5153",
+                    "outputSha256": "1e455e401ec43273f612e7ae2de81b1ca4e3b6c5037da8506d1ce863af940951"
+                },
+                {
+                    "kind": "tts",
+                    "model": "qwen-audio-3.1-tts-next",
+                    "text_prompt": "@voice1说：“傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第9站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。”",
+                    "referenceSha256": "4e2819683696357775e710d8a20b39212e18e0fd58cfe1a6e92cdc0f7f1d5153",
+                    "outputSha256": "bc974ad81dcff11821ef27d22d6f38910e2a7f158c3be153800011c0504cbde3"
+                },
+                {
+                    "kind": "tts",
+                    "model": "qwen-audio-3.1-tts-next",
+                    "text_prompt": "@voice1说：“小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。”",
+                    "referenceSha256": "4e2819683696357775e710d8a20b39212e18e0fd58cfe1a6e92cdc0f7f1d5153",
+                    "outputSha256": "4d9749c9ee2b6098a458705ea1b47840cdeb11c56712da55acb10abc6e32b49c"
+                },
+                {
+                    "kind": "tts",
+                    "model": "qwen-audio-3.1-tts-next",
+                    "text_prompt": "@voice1说：“第4站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。”",
+                    "referenceSha256": "4e2819683696357775e710d8a20b39212e18e0fd58cfe1a6e92cdc0f7f1d5153",
+                    "outputSha256": "0554830430a41742faa9efe3c08230082fcdf3cfa0104085b3ce881881d35b43"
+                }
+            ],
+            "orderedAudioKeys": [
+                "tasks/ddfcIUh49b7FPOGX52EEp/fujVFhhO0JK86YSmSIU-H.wav",
+                "tasks/3OMmRIxh7d8t57OT9-kAC/mdw1fuU8II26SKbrLNzFg.wav",
+                "tasks/SS8CQBa0G3ejWiLm4fqfM/QnWHyYoHt4Q71OmSgONTY.wav",
+                "tasks/KyWio4j1DWF0p1QEiBAvb/wM1P8mP4JlO2RCX5wlq88.wav",
+                "tasks/EbvC-rswLQpj04ia-jbyh/7LGZIm51Hggkkbyrs4XYI.wav",
+                "tasks/XZt1wq9-oZF9Ts66-MlmD/jLY3j2GCmnFLEE0-MQhfl.wav",
+                "tasks/mFjXZ3Ltx2wvLsz9fP-Rc/YUreLxRCkrQVYS4HDmz0c.wav",
+                "tasks/UrwgtI7ikkxNbp-7hi09Q/_qnOjFzx0zBra8gdw-jCb.wav",
+                "tasks/8O4SDfeYo434KMDRqY3mn/5Y1bI8bMCXsgSzfPe5AtA.wav",
+                "tasks/20xaviXBTO-LkbhtLDARb/_0KzXfuwKnipTxJfZ3GPi.wav",
+                "tasks/e_ssyXLhYF-kaM3rW_-dQ/m5PMDk8ZamdVJmlsxvzzv.wav",
+                "tasks/ZpQMyLJUw6JC2NIeAxrbE/6oTBqG-brRUcLrweKFLH-.wav",
+                "tasks/ODZyuMXhUdDWHGEtKmbpj/NESGyrkAsCWJxciKgbI-R.wav",
+                "tasks/527-3uARuyav_7OGpm3O6/aWk1LvKiNidNJ06bA0OwP.wav"
+            ],
+            "oneReferenceForAll": true
+        },
+        "playback": [
+            {
+                "duration": 1,
+                "time": 0.062811
+            },
+            {
+                "duration": 1,
+                "time": 0.04985
+            },
+            {
+                "duration": 1,
+                "time": 0.057911
+            },
+            {
+                "duration": 1,
+                "time": 0.06433
+            },
+            {
+                "duration": 1,
+                "time": 0.050866
+            },
+            {
+                "duration": 1,
+                "time": 0.058599
+            },
+            {
+                "duration": 1,
+                "time": 0.044441
+            },
+            {
+                "duration": 1,
+                "time": 0.052747
+            },
+            {
+                "duration": 1,
+                "time": 0.060063
+            },
+            {
+                "duration": 1,
+                "time": 0.047718
+            },
+            {
+                "duration": 1,
+                "time": 0.055865
+            },
+            {
+                "duration": 1,
+                "time": 0.062579
+            },
+            {
+                "duration": 1,
+                "time": 0.049337
+            },
+            {
+                "duration": 1,
+                "time": 0.057954
+            }
+        ],
+        "downloadedAllSegments": [
+            "f235e25d32c417b4d87252c682f370e9b15234732c6b6ba8aefc4b7f8c98c091",
+            "474c3642c8494cabda1a6d0040b73dff4ca35bf907adfc0650a0307dae18df8c",
+            "1e455e401ec43273f612e7ae2de81b1ca4e3b6c5037da8506d1ce863af940951",
+            "4d9749c9ee2b6098a458705ea1b47840cdeb11c56712da55acb10abc6e32b49c",
+            "8264dfadc1c0e7fb77ccc16c76f2c25e22de75ef128202109e8b4403d69e547e",
+            "3bb601f88ab8285a42175f3d56e51e11364d1161e7ada0aa42d0a0e43b605907",
+            "cb3cfe3439553e3281d01748b699bbb614177ace239e1cef663fce26a161cd6e",
+            "122c81c52632599a5253fc7bbff7a56b7a76ed7e723024e3982813a6a3eff8e4",
+            "bc974ad81dcff11821ef27d22d6f38910e2a7f158c3be153800011c0504cbde3",
+            "32385192a203ed3f6abfb03e88cc5cf22c31c670e5e8f641d8267edbd9910076",
+            "0554830430a41742faa9efe3c08230082fcdf3cfa0104085b3ce881881d35b43",
+            "7e68714b85d4d2773db9d28ae34c0aff3209e6cc29cb7ea80b9c657dc8494673",
+            "a7ff407608b7a8ad657722007ba7d416e21c5fffdfdf3be44ee67692a9cd97cf",
+            "c2966c905eda46d3081d3d51c34812c7df060ca3aac6895aea02aed5f36c899c"
+        ],
+        "editAndRerun": {
+            "splitTask": "cUSyyNiao-XA7_xYXGwme",
+            "updated": "修改后的开头：这次活动从傍晚开始。\n\n第1站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第2站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第3站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有",
+            "preview": [
+                "修改后的开头：这次活动从傍晚开始。\n\n第1站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。",
+                "管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n",
+                "第2站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。",
+                "小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第3站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有"
+            ],
+            "requests": [
+                {
+                    "kind": "tts",
+                    "model": "qwen-audio-3.1-tts-next",
+                    "text_prompt": "@voice1说：“第2站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。”",
+                    "referenceSha256": "4e2819683696357775e710d8a20b39212e18e0fd58cfe1a6e92cdc0f7f1d5153",
+                    "outputSha256": "e6c0f98725260aadd24dc470a7ae17cc34d068819acc929fa1809df94d50d28c"
+                },
+                {
+                    "kind": "tts",
+                    "model": "qwen-audio-3.1-tts-next",
+                    "text_prompt": "@voice1说：“小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第3站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有”",
+                    "referenceSha256": "4e2819683696357775e710d8a20b39212e18e0fd58cfe1a6e92cdc0f7f1d5153",
+                    "outputSha256": "84aaec4dae12f5c7e10b080ec2e494da1bb13a235ffe47a3ed68345438467db5"
+                },
+                {
+                    "kind": "tts",
+                    "model": "qwen-audio-3.1-tts-next",
+                    "text_prompt": "@voice1说：“修改后的开头：这次活动从傍晚开始。\n\n第1站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。”",
+                    "referenceSha256": "4e2819683696357775e710d8a20b39212e18e0fd58cfe1a6e92cdc0f7f1d5153",
+                    "outputSha256": "121d95ba7d09100899e668421dea1c8738da08dd02847dc25cfadde9cd3d742b"
+                },
+                {
+                    "kind": "tts",
+                    "model": "qwen-audio-3.1-tts-next",
+                    "text_prompt": "@voice1说：“管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。”",
+                    "referenceSha256": "4e2819683696357775e710d8a20b39212e18e0fd58cfe1a6e92cdc0f7f1d5153",
+                    "outputSha256": "fb22ce0b2d39faf1dd8174fe418752fbdadbbef34ba8203455867e757ad34197"
+                }
+            ],
+            "exact": true
+        },
+        "savedReloaded": {
+            "workflowId": 1,
+            "connectionsAndResultsPreserved": true
+        },
+        "reopenedFromDatabase": true,
+        "engine": {
+            "taskId": "X0gH2_i4NNBOvM25ibQrN",
+            "complete": true,
+            "usesAppExport": true,
+            "orderedRows": [
+                {
+                    "text": "修改后的开头：这次活动从傍晚开始。\n\n第1站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。",
+                    "refAudio": "q_Kc-FAa5s4mCanUyRbBw.wav",
+                    "status": "COMPLETED",
+                    "audio": "tasks/X0gH2_i4NNBOvM25ibQrN/145509ff823c4ebea0d47c7078e54ecf.wav"
+                },
+                {
+                    "text": "管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n",
+                    "refAudio": "q_Kc-FAa5s4mCanUyRbBw.wav",
+                    "status": "COMPLETED",
+                    "audio": "tasks/X0gH2_i4NNBOvM25ibQrN/8890f5cac81e474fa4f2d5acf2e5adb3.wav"
+                },
+                {
+                    "text": "第2站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。",
+                    "refAudio": "q_Kc-FAa5s4mCanUyRbBw.wav",
+                    "status": "COMPLETED",
+                    "audio": "tasks/X0gH2_i4NNBOvM25ibQrN/b678e7abdde64ed28c351aede34f5e96.wav"
+                },
+                {
+                    "text": "小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。\n\n第3站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有",
+                    "refAudio": "q_Kc-FAa5s4mCanUyRbBw.wav",
+                    "status": "COMPLETED",
+                    "audio": "tasks/X0gH2_i4NNBOvM25ibQrN/bd59ec6f5fa24efda32a2a72bdcb4426.wav"
+                }
+            ]
+        }
+    },
+    "reference": {
+        "fileKey": "q_Kc-FAa5s4mCanUyRbBw.wav",
+        "sha256": "4e2819683696357775e710d8a20b39212e18e0fd58cfe1a6e92cdc0f7f1d5153",
+        "origin": "macOS Tingting, local synthetic test voice"
+    },
+    "execution": "Real Chrome, local simulated providers. Not real Bailian generation.",
+    "localEvidenceDirectory": ".tongflow/speech-workflow/browser-BFtJvX"
+}

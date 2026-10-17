@@ -806,7 +806,8 @@
                 "download": "ダウンロード",
                 "downloadFailed": "音声のダウンロードに失敗しました。もう一度お試しください。",
                 "textEditor": "テキストエディター",
-                "enterText": "テキストを入力してください..."
+                "enterText": "テキストを入力してください...",
+                "editedSource": "Manually edited source: downstream uses this text; upstream reruns create a separate result."
             },
             "add": {
                 "addAudio": "音声を追加",
@@ -881,6 +882,31 @@
                 "promptLabel": "オーディオの説明",
                 "promptPlaceholder": "場面をまるごと書きます：誰がどう話すか、背景の環境音、効果音。セリフは引用符で囲みます。例：@voice1 が言う：「今日はいい天気だね。」窓の外で小雨が降っている。",
                 "hint": "話し声・効果音・環境音を一度に生成します。参照ボイスとして音声を最大 3 本つなぎ、クリックすると @voice1…@voice3 が挿入されます。"
+            },
+            "speechFlow": {
+                "connectedReference": "Reference from node: {source} (connection takes priority)",
+                "localReference": "Reference uploaded or recorded here. You can also connect an audio node to the reference audio input.",
+                "connectedText": "Current text from: {source}",
+                "connectText": "Connect an upstream text node. Historical copied text is not an input.",
+                "upstreamChanged": "Upstream output is empty, stale or unverified. Run document parsing or text splitting again.",
+                "results": "Speech results: source text and audio",
+                "historicalResults": "Historical speech (inputs changed; generate again)",
+                "completed": "Completed",
+                "failed": "Failed or cancelled",
+                "pending": "Generating",
+                "reference": "Reference for this run",
+                "download": "Download segment",
+                "splitHint": "Split without rewriting. Preserve every character, punctuation and source order; connect outputs directly to batch speech.",
+                "splitMode": "Split for",
+                "forSpeech": "Speech synthesis",
+                "general": "General semantic splitting",
+                "profile": "Target speech model",
+                "customProfile": "Other model (set character limit)",
+                "targetSeconds": "Target seconds per segment",
+                "speechRate": "Estimated characters per second",
+                "maxChars": "Maximum characters per segment",
+                "durationHint": "Duration is an estimate (45 seconds by default). Reduce the character budget for slow speech, English or pauses. Qwen Audio reserves headroom below its 120-second limit and space for voice instructions.",
+                "clearReference": "Clear local reference"
             }
         }
     },

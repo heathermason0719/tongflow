@@ -1,0 +1,87 @@
+{
+    "status": "passed",
+    "provider": "Local simulated interface, no paid calls",
+    "documents": [
+        {
+            "filename": "short.md",
+            "uploadKey": "V_zjAx6IKcDG-EuRgvuMS.md",
+            "parseTaskId": "yiyLs1lHqIrhB52TSXAv3",
+            "textMaterialId": 1,
+            "exactTextMatch": true,
+            "textSha256": "ed147dd4de99fc377a40c2a976801268f7014b5ffcd4e78985a38ffe5e202b1d",
+            "characters": 176,
+            "splitTaskId": "-X4mtnS3qQr3lO1MfaYSA",
+            "model": "qwen-plus",
+            "segments": 5,
+            "maxSegmentCharacters": 52,
+            "providerCallsDuringExtraction": 0
+        },
+        {
+            "filename": "short.txt",
+            "uploadKey": "ZSHHl761r-ktQ9ljA_Wy1.txt",
+            "parseTaskId": "iN9x-IdmWvvcQUakj2216",
+            "textMaterialId": 2,
+            "exactTextMatch": true,
+            "textSha256": "8bc07e8a2c3bf677b28a186ad27b9f022bf326f93eb8b4242cf0b2a9bdaacb96",
+            "characters": 132,
+            "splitTaskId": "DtAwX0kV3-EcxNIvQguEx",
+            "model": "qwen-plus",
+            "segments": 3,
+            "maxSegmentCharacters": 53,
+            "providerCallsDuringExtraction": 0
+        },
+        {
+            "filename": "short.docx",
+            "uploadKey": "v1qdPitU2X-M-LtY-kO-V.docx",
+            "parseTaskId": "I92V2JW-mmGPZmnIcIGBo",
+            "textMaterialId": 3,
+            "exactTextMatch": true,
+            "textSha256": "cb532def15fc604aa5228cf4b0fb024f1002b4693fc054cb842d7a4363d37175",
+            "characters": 142,
+            "splitTaskId": "0UCK4ilIPy7ytMXHUm-d8",
+            "model": "qwen-plus",
+            "segments": 4,
+            "maxSegmentCharacters": 52,
+            "providerCallsDuringExtraction": 0
+        },
+        {
+            "filename": "long.txt",
+            "uploadKey": "4kd0IZTMt8EkOcb2JQRql.txt",
+            "parseTaskId": "NcjqrwoOwXxigVn6niOpg",
+            "textMaterialId": 4,
+            "exactTextMatch": true,
+            "textSha256": "cb99e07dc9ab88ae25724a8c4b2949ace60145880c106d4720f1f2858bdc96be",
+            "characters": 63458,
+            "splitTaskId": "u0pr-s4PMkVYq35Li0Gt1",
+            "model": "deepseek-v4.1-flash",
+            "segments": 806,
+            "maxSegmentCharacters": 89,
+            "providerCallsDuringExtraction": 0
+        },
+        {
+            "filename": "existing.pdf",
+            "uploadKey": "rN9BfsoFZK-b_gZ8x8Zdm.pdf",
+            "parseTaskId": "NmPB0SOBskofrBR6THa6_",
+            "textMaterialId": 5,
+            "exactTextMatch": true,
+            "textSha256": "ddaef05209a5f2ac5ab1a46262e7fdf007afe46a4093f21069310eeff9a9bc1f",
+            "characters": 32,
+            "splitTaskId": "maP41N6AvWWvUTE4Yj725",
+            "model": "qwen-plus",
+            "segments": 1,
+            "maxSegmentCharacters": 32,
+            "providerCallsDuringExtraction": 1
+        }
+    ],
+    "longEngineWorkflow": {
+        "workflowId": 1,
+        "taskId": "B4vb38KxOP7mCNqEIgCt3",
+        "exactExtractedTextMatch": true,
+        "splitCoverageMatch": true
+    },
+    "audioFormats": ["wav", "m4a"],
+    "audioCount": 2,
+    "audioBytesAndFullDecodePassed": true,
+    "qwenAudioUiUnchanged": true,
+    "localEvidenceDirectory": ".tongflow/audio-documents/browser-lwJ9tr"
+}

@@ -9,7 +9,7 @@
  */
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { NODE_TYPE_TO_ABI_FEATURE } from "../../core/abi/node-feature-registry";
@@ -43,7 +43,14 @@ describe("ABI node components ↔ static registry", () => {
     const files = nodeTypeFiles();
     const componentFeature: Record<string, string> = {};
     for (const [nodeType, file] of Object.entries(files)) {
-        const m = readFileSync(file, "utf8").match(/feature="([^"]+)"/);
+        let source = readFileSync(file, "utf8");
+        const shared = source.match(/export \{ default \} from "([^"]+)"/);
+        if (shared)
+            source = readFileSync(
+                resolve(dirname(file), `${shared[1]}.tsx`),
+                "utf8",
+            );
+        const m = source.match(/feature="([^"]+)"/);
         if (m) componentFeature[nodeType] = m[1];
     }
 

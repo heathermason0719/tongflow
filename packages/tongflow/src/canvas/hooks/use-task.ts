@@ -58,6 +58,8 @@ export interface Task {
     result?: unknown;
     error?: string;
     nodeId?: string; // Linked node id
+    input?: Record<string, unknown>;
+    batchIndex?: number;
 }
 
 // Node handler map: taskId -> nodeId -> handler
@@ -675,7 +677,9 @@ export function useBatchTaskManager(
             try {
                 const taskIds: string[] = [];
 
+                let nextBatchIndex = 0;
                 const createPromises = taskConfigs.map(async (taskConfig) => {
+                    const batchIndex = nextBatchIndex++;
                     const { taskId } = await apiCreateTask(taskConfig);
                     taskIds.push(taskId);
 
@@ -726,6 +730,8 @@ export function useBatchTaskManager(
                                     progress: message.progress || 0,
                                     data: message.data,
                                     error: message.error,
+                                    input: taskConfig.prompt,
+                                    batchIndex,
                                     nodeId:
                                         (msgNodeId != null && msgNodeId !== ""
                                             ? String(msgNodeId)

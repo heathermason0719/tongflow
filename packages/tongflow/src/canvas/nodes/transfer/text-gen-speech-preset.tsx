@@ -7,6 +7,7 @@ import {
     QWEN_SPEAKERS,
 } from "../../constants/qwen-speakers";
 import { useAbiForm } from "../../hooks/use-abi-form";
+import { useEffectiveInputs } from "../../hooks/use-effective-inputs";
 import { Card } from "../../ui/card";
 import { Label } from "../../ui/label";
 import {
@@ -30,7 +31,12 @@ const TextGenSpeechPresetNode = ({
     const t = useTranslations("Workspace.nodes");
     const tLang = useTranslations("Languages");
     const form = useAbiForm("text-gen-speech-preset");
-    const texts = data.texts ?? [];
+    const input = useEffectiveInputs("text-gen-speech-preset", form.state);
+    const texts = input.prompts
+        .map((p) => p.text)
+        .filter(
+            (x): x is string => typeof x === "string" && x.trim().length > 0,
+        );
 
     const speaker = form.state.speaker ?? DEFAULT_QWEN_SPEAKER.value;
     const setForm = form.set;

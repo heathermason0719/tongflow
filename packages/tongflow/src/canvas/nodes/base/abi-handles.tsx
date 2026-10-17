@@ -4,13 +4,12 @@
  * Inputs:  one target Handle per `kind:"handle"` field (id = `in:<field>`)
  * Outputs: one source Handle per ABI output route (id = `out:<field>`)
  *
- * Layout: all handles emit from the vertical center of the node's left
- * (targets) and right (sources) edges, regardless of how many there are.
- * Callers can override layout via `style` or a `layout` prop later if needed.
+ * Layout: multiple handles are spaced along the node's left/right sides.
  */
 
 import { Handle, Position } from "@xyflow/react";
 import { useMemo } from "react";
+import { useTranslations } from "use-intl";
 import type { NodeSlot, ResolvedSpec } from "../../../core";
 import { sourceHandleId, targetHandleId } from "../../../core";
 import { useNodeAbiSpec } from "../../hooks/use-node-abi-spec";
@@ -33,10 +32,20 @@ interface HandleSpec {
 
 function distributeHandles(targets: string[], sources: string[]): HandleSpec[] {
     const out: HandleSpec[] = [];
-    // All handles emit from the vertical center of their side, regardless of
-    // count. Note: multiple handles on the same side overlap at 50%.
-    targets.forEach((id) => out.push({ id, role: "target", offset: 0.5 }));
-    sources.forEach((id) => out.push({ id, role: "source", offset: 0.5 }));
+    targets.forEach((id, i) =>
+        out.push({
+            id,
+            role: "target",
+            offset: (i + 1) / (targets.length + 1),
+        }),
+    );
+    sources.forEach((id, i) =>
+        out.push({
+            id,
+            role: "source",
+            offset: (i + 1) / (sources.length + 1),
+        }),
+    );
     return out;
 }
 
@@ -63,6 +72,7 @@ export function AbiHandles<F extends NodeSlot>({
     handleClassName,
 }: AbiHandlesProps<F>) {
     const spec = useNodeAbiSpec(feature);
+    const t = useTranslations("Workspace.handles");
     const handles = useMemo(() => {
         const { targets, sources } = getHandleIds(spec);
         return distributeHandles(targets, sources);
@@ -78,6 +88,11 @@ export function AbiHandles<F extends NodeSlot>({
                         h.role === "target" ? targetPosition : sourcePosition
                     }
                     id={h.id}
+                    title={
+                        t.has(h.id.slice(h.id.indexOf(":") + 1))
+                            ? t(h.id.slice(h.id.indexOf(":") + 1))
+                            : h.id
+                    }
                     className={handleClassName}
                     style={{ top: `${(h.offset * 100).toFixed(2)}%` }}
                 />

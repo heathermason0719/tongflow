@@ -892,7 +892,8 @@
                 "download": "Download",
                 "downloadFailed": "Audio download failed. Please try again.",
                 "textEditor": "Text Editor",
-                "enterText": "Enter text content..."
+                "enterText": "Enter text content...",
+                "editedSource": "Manually edited source: downstream uses this text; upstream reruns create a separate result."
             },
             "add": {
                 "addAudio": "Add Audio",
@@ -967,6 +968,31 @@
                 "promptLabel": "Audio prompt",
                 "promptPlaceholder": "Describe the whole scene: who speaks and how, background ambience, sound effects. Quote the lines, e.g. @voice1 says: \"It's sunny today.\" Rain patters on the window.",
                 "hint": "One pass renders speech, sound effects and ambience together. Connect up to 3 audio clips as reference voices and click one to insert @voice1…@voice3."
+            },
+            "speechFlow": {
+                "connectedReference": "Reference from node: {source} (connection takes priority)",
+                "localReference": "Reference uploaded or recorded here. You can also connect an audio node to the reference audio input.",
+                "connectedText": "Current text from: {source}",
+                "connectText": "Connect an upstream text node. Historical copied text is not an input.",
+                "upstreamChanged": "Upstream output is empty, stale or unverified. Run document parsing or text splitting again.",
+                "results": "Speech results: source text and audio",
+                "historicalResults": "Historical speech (inputs changed; generate again)",
+                "completed": "Completed",
+                "failed": "Failed or cancelled",
+                "pending": "Generating",
+                "reference": "Reference for this run",
+                "download": "Download segment",
+                "splitHint": "Split without rewriting. Preserve every character, punctuation and source order; connect outputs directly to batch speech.",
+                "splitMode": "Split for",
+                "forSpeech": "Speech synthesis",
+                "general": "General semantic splitting",
+                "profile": "Target speech model",
+                "customProfile": "Other model (set character limit)",
+                "targetSeconds": "Target seconds per segment",
+                "speechRate": "Estimated characters per second",
+                "maxChars": "Maximum characters per segment",
+                "durationHint": "Duration is an estimate (45 seconds by default). Reduce the character budget for slow speech, English or pauses. Qwen Audio reserves headroom below its 120-second limit and space for voice instructions.",
+                "clearReference": "Clear local reference"
             }
         }
     },

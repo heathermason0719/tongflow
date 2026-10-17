@@ -7,6 +7,30 @@ function seq() {
 }
 
 describe("createFlowStore (headless)", () => {
+    it("keeps a manually edited text source when its producer runs again", () => {
+        const store = createFlowStore({ createId: seq() });
+        const producer = store.getState().addNode({ type: "fileGenTextNode" });
+        const [text] = store
+            .getState()
+            .expands(producer, [
+                { type: "textNode", data: { texts: ["原文。"] } },
+            ]);
+        store
+            .getState()
+            .updates(text, { texts: ["编辑稿。"], manualTextOverride: true });
+        const [fresh] = store
+            .getState()
+            .expands(producer, [
+                { type: "textNode", data: { texts: ["重新解析。"] } },
+            ]);
+        expect(fresh).not.toBe(text);
+        expect(
+            store.getState().nodes.find((n) => n.id === text)?.data.texts,
+        ).toEqual(["编辑稿。"]);
+        expect(
+            store.getState().nodes.find((n) => n.id === fresh)?.data.texts,
+        ).toEqual(["重新解析。"]);
+    });
     it("adds a node and reports it via onNodeCreated", () => {
         const store = createFlowStore({ createId: seq() });
         const created: string[][] = [];

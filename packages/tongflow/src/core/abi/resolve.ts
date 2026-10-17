@@ -22,6 +22,7 @@ import {
     parseTargetHandleId,
     targetHandleId,
 } from "./handle-introspect";
+import { isOutputCurrent } from "./input-lineage";
 import type { FieldSourceOverride, HandleOverride } from "./sources";
 
 /* ------------------------------------------------------------------ */
@@ -218,6 +219,20 @@ export function collectHandleValues(
         nodes instanceof Map
             ? nodes
             : new Map(nodes.map((n) => [n.id, n] as const));
+    const allNodes = Array.from(lookup.values());
+    const readSource = (src: Node, path: string, edge: Edge) => {
+        if (!isOutputCurrent(src, allNodes, edges)) return undefined;
+        const output = src.data.liveOutput as
+            | Record<string, unknown>
+            | undefined;
+        if (output && edge.sourceHandle?.startsWith("out:")) {
+            const value = output[edge.sourceHandle.slice(4)];
+            return path.endsWith("[0]") && Array.isArray(value)
+                ? value[0]
+                : value;
+        }
+        return getValueByPath(src.data as Record<string, unknown>, path);
+    };
 
     for (const [field, resolved] of Object.entries(spec.fields)) {
         if (resolved.kind !== "handle") continue;
@@ -230,15 +245,17 @@ export function collectHandleValues(
                 if (parseTargetHandleId(edge.targetHandle) !== field) continue;
                 const src = lookup.get(edge.source);
                 if (!src) continue;
-                const v = getValueByPath(
-                    src.data as Record<string, unknown>,
-                    resolved.path,
-                );
+                const v = readSource(src, resolved.path, edge);
                 if (v === undefined || v === null) continue;
                 if (Array.isArray(v)) values.push(...v);
                 else values.push(v);
             }
-            result[field] = values;
+            result[field] =
+                resolved.nodeType === "textNode"
+                    ? values.filter(
+                          (v) => typeof v === "string" && v.trim().length > 0,
+                      )
+                    : values;
             continue;
         }
 
@@ -247,12 +264,10 @@ export function collectHandleValues(
         for (const edge of edges) {
             if (edge.target !== targetNodeId) continue;
             if (parseTargetHandleId(edge.targetHandle) !== field) continue;
+            value = null; // Connected but empty: never fall back to an old upload.
             const src = lookup.get(edge.source);
             if (!src) continue;
-            value = getValueByPath(
-                src.data as Record<string, unknown>,
-                resolved.path,
-            );
+            value = readSource(src, resolved.path, edge) ?? null;
             if (value !== undefined && value !== null) break;
         }
         result[field] = value;
@@ -301,7 +316,7 @@ export function buildPrompts({
             } else if (f.kind === "handle") {
                 v = handleValues[field];
                 // Widget ⇄ input duality: upstream wins, manual config is fallback.
-                if ((v === undefined || v === null || v === "") && f.manual) {
+                if (v === undefined && f.manual) {
                     v = configValues[field];
                 }
             } else if (f.kind === "config") {

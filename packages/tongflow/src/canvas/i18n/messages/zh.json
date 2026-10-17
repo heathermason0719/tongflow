@@ -892,7 +892,8 @@
                 "download": "下载",
                 "downloadFailed": "音频下载失败，请重试。",
                 "textEditor": "编辑文本",
-                "enterText": "请输入文本内容..."
+                "enterText": "请输入文本内容...",
+                "editedSource": "已手工编辑：后续配音使用此文本，上游重跑会另建结果。"
             },
             "add": {
                 "addAudio": "添加音频",
@@ -967,6 +968,31 @@
                 "promptLabel": "音频描述",
                 "promptPlaceholder": "把整段场景写出来：谁在说话、怎么说，背景环境，音效。台词用引号，例如：@voice1 说：“今天天气真好。”窗外下着小雨。",
                 "hint": "一次生成人声、音效和环境声。最多连 3 段音频作参考音色，点一下就把 @voice1…@voice3 插进描述里。"
+            },
+            "speechFlow": {
+                "connectedReference": "参考声音来自节点：{source}（连接优先）",
+                "localReference": "参考声音来自本节点上传或录音；也可从左侧“参考音频”入口连入独立音频节点。",
+                "connectedText": "当前文本来自：{source}",
+                "connectText": "请连接上游文本节点；旧节点里复制的文本不会作为输入。",
+                "upstreamChanged": "上游结果为空、已过期或尚未核验，请先重新执行文档解析或智能拆分。",
+                "results": "本次配音：原文与音频",
+                "historicalResults": "历史配音（输入已改变，请重新生成）",
+                "completed": "已完成",
+                "failed": "失败或已取消",
+                "pending": "生成中",
+                "reference": "本次参考声音",
+                "download": "下载这一段",
+                "splitHint": "只分段，不改稿。保留原文全部文字、标点和顺序；输出可以直接连入批量配音。",
+                "splitMode": "分段用途",
+                "forSpeech": "语音配音",
+                "general": "通用语义分段",
+                "profile": "目标语音模型",
+                "customProfile": "其他模型（自行设置字数上限）",
+                "targetSeconds": "每段目标时长（秒）",
+                "speechRate": "估算语速（字/秒）",
+                "maxChars": "每段字数上限",
+                "durationHint": "时长为估算，默认约45秒。慢速、英文或停顿多时请降低字数。Qwen Audio按120秒输出上限留余量，并预留声音提示词长度。",
+                "clearReference": "清除本地参考声音"
             }
         }
     },

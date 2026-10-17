@@ -659,6 +659,27 @@ def test_run_workflow_batch_fan_out(tmp_path, monkeypatch):
     assert "batch 1/3" in msgs and "batch 3/3" in msgs
 
 
+def test_advanced_parameters_survive_batch_input_resolution(tmp_path, monkeypatch):
+    abi_path = _write_abi(tmp_path)
+    plugins_dir, plugin_id, workflow, exec_id = _stub_plugin_and_workflow(tmp_path)
+    _patch_scan(monkeypatch, plugin_id)
+    workflow["dataNodes"][0]["staticData"] = {"texts": ["first", "second"]}
+    workflow["executableNodes"][0]["batchField"] = "text"
+    workflow["executableNodes"][0]["params"] = {"target_seconds": 20}
+    calls = []
+
+    def invoke(plugin_id, slot, prompt, plugin_dir, model):
+        calls.append(prompt)
+        return {"success": True, "text": prompt["text"]}
+
+    result = run_workflow(workflow, plugins_dir=plugins_dir,
+                          data_dir=tmp_path / "data", abi_path=abi_path,
+                          auto_install=False, invoker=invoke)
+    assert result["status"] == "success"
+    assert calls == [{"text": "first", "_params": {"target_seconds": 20}},
+                     {"text": "second", "_params": {"target_seconds": 20}}]
+
+
 def test_run_workflow_scalar_overflow_fails_node(tmp_path, monkeypatch):
     # Without a batchField, N>1 values into a scalar input fail the node
     # loudly instead of silently processing only the first value.

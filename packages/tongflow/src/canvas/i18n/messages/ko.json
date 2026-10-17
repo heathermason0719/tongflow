@@ -892,7 +892,8 @@
                 "download": "다운로드",
                 "downloadFailed": "오디오 다운로드에 실패했습니다. 다시 시도해 주세요.",
                 "textEditor": "텍스트 편집기",
-                "enterText": "텍스트 내용 입력..."
+                "enterText": "텍스트 내용 입력...",
+                "editedSource": "Manually edited source: downstream uses this text; upstream reruns create a separate result."
             },
             "add": {
                 "addAudio": "오디오 추가",
@@ -967,6 +968,31 @@
                 "promptLabel": "오디오 설명",
                 "promptPlaceholder": "장면 전체를 적어 주세요. 누가 어떻게 말하는지, 배경 소리, 효과음까지. 대사는 따옴표로 묶어요. 예: @voice1이 말한다: \"오늘 날씨 좋다.\" 창밖에 가랑비가 내린다.",
                 "hint": "말소리, 효과음, 배경음을 한 번에 만들어요. 참조 음색으로 오디오를 최대 3개까지 연결하고, 누르면 @voice1…@voice3이 설명에 들어가요."
+            },
+            "speechFlow": {
+                "connectedReference": "Reference from node: {source} (connection takes priority)",
+                "localReference": "Reference uploaded or recorded here. You can also connect an audio node to the reference audio input.",
+                "connectedText": "Current text from: {source}",
+                "connectText": "Connect an upstream text node. Historical copied text is not an input.",
+                "upstreamChanged": "Upstream output is empty, stale or unverified. Run document parsing or text splitting again.",
+                "results": "Speech results: source text and audio",
+                "historicalResults": "Historical speech (inputs changed; generate again)",
+                "completed": "Completed",
+                "failed": "Failed or cancelled",
+                "pending": "Generating",
+                "reference": "Reference for this run",
+                "download": "Download segment",
+                "splitHint": "Split without rewriting. Preserve every character, punctuation and source order; connect outputs directly to batch speech.",
+                "splitMode": "Split for",
+                "forSpeech": "Speech synthesis",
+                "general": "General semantic splitting",
+                "profile": "Target speech model",
+                "customProfile": "Other model (set character limit)",
+                "targetSeconds": "Target seconds per segment",
+                "speechRate": "Estimated characters per second",
+                "maxChars": "Maximum characters per segment",
+                "durationHint": "Duration is an estimate (45 seconds by default). Reduce the character budget for slow speech, English or pauses. Qwen Audio reserves headroom below its 120-second limit and space for voice instructions.",
+                "clearReference": "Clear local reference"
             }
         }
     },

@@ -1,0 +1,886 @@
+/** Chrome acceptance with real uploads, graph gestures, task/SSE, persistence,
+ * and both execution paths. Provider responses are LOCAL SIMULATIONS.
+ * No user audio, credentials, database, or paid provider is used.
+ */
+import assert from "node:assert/strict";
+import { execFileSync, spawn } from "node:child_process";
+import { createHash, randomUUID } from "node:crypto";
+import fs from "node:fs";
+import http from "node:http";
+import net from "node:net";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
+
+const root = process.cwd();
+fs.mkdirSync(path.join(root, ".tongflow/speech-workflow"), { recursive: true });
+const output = fs.mkdtempSync(
+    path.join(root, ".tongflow/speech-workflow/browser-"),
+);
+const qaData = path.join(output, "data");
+const shots = path.join(output, "screenshots");
+const downloads = path.join(output, "downloads");
+for (const dir of [qaData, shots, downloads])
+    fs.mkdirSync(dir, { recursive: true });
+const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
+const pause = (ms) => new Promise((r) => setTimeout(r, ms));
+const write = (name, data) =>
+    fs.writeFileSync(path.join(output, name), JSON.stringify(data, null, 2));
+const calls = [];
+const records = {
+    provider: "local simulation; NOT real Bailian generation",
+    output,
+    checks: {},
+};
+let browser, page, app;
+
+function wav(index) {
+    const frames = 24000;
+    const bytes = Buffer.alloc(44 + frames * 2);
+    bytes.write("RIFF");
+    bytes.writeUInt32LE(bytes.length - 8, 4);
+    bytes.write("WAVEfmt ", 8);
+    bytes.writeUInt32LE(16, 16);
+    bytes.writeUInt16LE(1, 20);
+    bytes.writeUInt16LE(1, 22);
+    bytes.writeUInt32LE(24000, 24);
+    bytes.writeUInt32LE(48000, 28);
+    bytes.writeUInt16LE(2, 32);
+    bytes.writeUInt16LE(16, 34);
+    bytes.write("data", 36);
+    bytes.writeUInt32LE(frames * 2, 40);
+    for (let i = 0; i < frames; i++)
+        bytes.writeInt16LE(
+            Math.round(
+                2000 * Math.sin((2 * Math.PI * (260 + index * 30) * i) / 24000),
+            ),
+            44 + i * 2,
+        );
+    return bytes;
+}
+
+const generated = new Map();
+const mock = http.createServer(async (req, res) => {
+    try {
+        if (req.method === "GET" && generated.has(req.url)) {
+            res.writeHead(200, { "Content-Type": "audio/wav" });
+            res.end(generated.get(req.url));
+            return;
+        }
+        assert.equal(req.method, "POST");
+        const chunks = [];
+        for await (const chunk of req) chunks.push(chunk);
+        const body = JSON.parse(Buffer.concat(chunks));
+        let response;
+        if (req.url === "/v1/chat/completions") {
+            const content = body.messages.at(-1).content;
+            const source = content.slice(content.indexOf("TEXT:\n") + 6);
+            // Deliberately overlong model segments exercise deterministic length
+            // enforcement and exact whitespace restoration in the real plugin.
+            calls.push({
+                kind: "split",
+                model: body.model,
+                source,
+                instruction: content.slice(0, content.indexOf("TEXT:\n")),
+            });
+            response = {
+                choices: [
+                    {
+                        message: {
+                            content: JSON.stringify({ texts: [source.trim()] }),
+                        },
+                    },
+                ],
+            };
+        } else {
+            assert.equal(
+                req.url,
+                "/api/v1/services/audio/tts/SpeechSynthesizer",
+            );
+            assert.equal(body.model, "qwen-audio-3.1-tts-next");
+            const refs = body.input.references;
+            assert.equal(refs.length, 1);
+            const referenceSha256 = sha(
+                Buffer.from(refs[0].audio_data.split(",")[1], "base64"),
+            );
+            const index = calls.filter((c) => c.kind === "tts").length;
+            const audio = wav(index);
+            const key = `/generated/${index}.wav`;
+            generated.set(key, audio);
+            calls.push({
+                kind: "tts",
+                model: body.model,
+                text_prompt: body.input.text_prompt,
+                referenceSha256,
+                outputSha256: sha(audio),
+            });
+            // Complete in a different order from the inputs.
+            await pause(index % 3 === 0 ? 650 : index % 3 === 1 ? 80 : 250);
+            response = {
+                output: {
+                    audio: {
+                        url: `http://127.0.0.1:${mock.address().port}${key}`,
+                    },
+                },
+            };
+        }
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(response));
+    } catch (error) {
+        calls.push({ error: String(error) });
+        res.writeHead(400);
+        res.end(JSON.stringify({ error: String(error) }));
+    }
+});
+
+async function graph() {
+    await pause(700);
+    return page.evaluate(() => ({
+        nodes: JSON.parse(localStorage.getItem("nodes") || "[]"),
+        edges: JSON.parse(localStorage.getItem("edges") || "[]"),
+    }));
+}
+async function fitCanvas() {
+    const button = await page.$('button[aria-label="Fit View"]');
+    if (button) await button.click();
+    await pause(350);
+}
+async function seed(nodes, edges = []) {
+    const base = new URL(page.url()).origin;
+    await page.goto(`${base}/api/feature/list`);
+    await page.evaluate(
+        ({ nodes, edges }) => {
+            localStorage.setItem("nodes", JSON.stringify(nodes));
+            localStorage.setItem("edges", JSON.stringify(edges));
+            localStorage.setItem(
+                "workflowMeta",
+                JSON.stringify({
+                    id: null,
+                    name: "配音链路离线验收",
+                    description: "公开合成样本，不含用户数据",
+                }),
+            );
+        },
+        { nodes, edges },
+    );
+    await page.goto(`${base}/workspace`, { waitUntil: "networkidle0" });
+    await page.waitForSelector(`.react-flow__node[data-id="${nodes[0].id}"]`);
+    await fitCanvas();
+}
+const node = (id, type, data, x = 0, y = 0) => ({
+    id,
+    type,
+    data,
+    position: { x, y },
+});
+const edge = (source, sourceHandle, target, targetHandle) => ({
+    id: `${source}-${target}`,
+    source,
+    sourceHandle,
+    target,
+    targetHandle,
+    type: "custom-edge",
+});
+const selector = (id) => `.react-flow__node[data-id="${id}"]`;
+async function clickText(text, scope = "body") {
+    await page.waitForSelector(scope);
+    for (const candidate of await page.$$(`${scope} button`)) {
+        if (
+            await candidate.evaluate(
+                (el, expected) => el.textContent.trim() === expected,
+                text,
+            )
+        ) {
+            await candidate.click();
+            return;
+        }
+    }
+    const element = await page.waitForSelector(`${scope} ::-p-text(${text})`);
+    await element.click();
+}
+async function button(id, label) {
+    const scope = selector(id);
+    await page.waitForFunction(
+        ({ scope, label }) =>
+            [...document.querySelectorAll(`${scope} button`)].some(
+                (b) => b.textContent.trim() === label && !b.disabled,
+            ),
+        {},
+        { scope, label },
+    );
+    for (const b of await page.$$(`${scope} button`))
+        if (
+            await b.evaluate(
+                (el, text) => el.textContent.trim() === text,
+                label,
+            )
+        ) {
+            await b.click();
+            return;
+        }
+    throw new Error(`Missing button: ${label}`);
+}
+async function task(id, label) {
+    const [response] = await Promise.all([
+        page.waitForResponse(
+            (r) =>
+                r.url().endsWith("/api/task/create") &&
+                r.request().method() === "POST",
+        ),
+        button(id, label),
+    ]);
+    assert.equal(response.status(), 200);
+    const { taskId } = await response.json();
+    await page.waitForFunction(
+        async (taskId) => {
+            const { tasks } = await (
+                await fetch("/api/task/list?limit=200")
+            ).json();
+            return tasks.some(
+                (t) =>
+                    t.id === taskId &&
+                    ["completed", "failed"].includes(t.status),
+            );
+        },
+        { polling: 200, timeout: 60000 },
+        taskId,
+    );
+    const row = await page.evaluate(
+        async (taskId) =>
+            (await (await fetch("/api/task/list?limit=200")).json()).tasks.find(
+                (t) => t.id === taskId,
+            ),
+        taskId,
+    );
+    assert.equal(row.status, "completed", row.error);
+    await pause(700);
+    return row;
+}
+async function connect(sourceId, sourceHandle, targetId, targetHandle) {
+    await fitCanvas();
+    const source = await page.$(
+        `${selector(sourceId)} .react-flow__handle[data-handleid="${sourceHandle}"]`,
+    );
+    const target = await page.$(
+        `${selector(targetId)} .react-flow__handle[data-handleid="${targetHandle}"]`,
+    );
+    assert.ok(source && target, "Connection handles must exist");
+    const a = await source.boundingBox(),
+        b = await target.boundingBox();
+    await page.mouse.move(a.x + a.width / 2, a.y + a.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2, { steps: 25 });
+    await page.mouse.up();
+    await page.waitForFunction(
+        ({ sourceId, targetId, targetHandle }) =>
+            JSON.parse(localStorage.getItem("edges") || "[]").some(
+                (e) =>
+                    e.source === sourceId &&
+                    e.target === targetId &&
+                    e.targetHandle === targetHandle,
+            ),
+        {},
+        { sourceId, targetId, targetHandle },
+    );
+}
+async function shot(name) {
+    await fitCanvas();
+    const clone = await page.$(selector("clone"));
+    if (clone && !name.startsWith("02")) {
+        const box = await clone.boundingBox();
+        const dx = 900 - box.x - box.width / 2;
+        const dy = 550 - box.y - box.height / 2;
+        await page.mouse.move(120, 180);
+        await page.mouse.down({ button: "middle" });
+        await page.mouse.move(120 + dx, 180 + dy, { steps: 15 });
+        await page.mouse.up({ button: "middle" });
+        await page.mouse.move(900, 550);
+        await page.mouse.wheel({ deltaY: -450 });
+        await pause(400);
+    }
+    await page.screenshot({ path: path.join(shots, `${name}.png`) });
+}
+
+try {
+    await new Promise((r) => mock.listen(0, "127.0.0.1", r));
+    const mockBase = `http://127.0.0.1:${mock.address().port}`;
+    fs.writeFileSync(
+        path.join(qaData, "settings.json"),
+        JSON.stringify({
+            OPENAI_API_KEY: randomUUID(),
+            OPENAI_BASE_URL: `${mockBase}/v1`,
+            OPENAI_CHAT_MODEL: "qwen-plus",
+            DASHSCOPE_API_KEY: randomUUID(),
+            DASHSCOPE_BASE_URL: mockBase,
+        }),
+    );
+    fs.cpSync(
+        path.join(root, "data/.tongflow/plugin-venv"),
+        path.join(qaData, ".tongflow/plugin-venv"),
+        { recursive: true, verbatimSymlinks: true },
+    );
+    const freePort = net.createServer();
+    await new Promise((r) => freePort.listen(0, "127.0.0.1", r));
+    const port = freePort.address().port;
+    await new Promise((r) => freePort.close(r));
+    const base = `http://127.0.0.1:${port}`;
+    const log = fs.openSync(path.join(output, "server.log"), "a");
+    app = spawn(
+        process.execPath,
+        [
+            "node_modules/next/dist/bin/next",
+            "start",
+            "-H",
+            "127.0.0.1",
+            "-p",
+            String(port),
+        ],
+        {
+            cwd: root,
+            env: {
+                ...process.env,
+                PORT: String(port),
+                TONGFLOW_DATA_DIR: qaData,
+                TONGFLOW_AUTH_TOKEN: "",
+                PYTHON: path.join(qaData, ".tongflow/plugin-venv/bin/python"),
+                NEXT_TELEMETRY_DISABLED: "1",
+            },
+            stdio: ["ignore", log, log],
+        },
+    );
+    fs.closeSync(log);
+    for (let i = 0; ; i++) {
+        try {
+            if ((await fetch(`${base}/workspace`)).ok) break;
+        } catch {}
+        assert.ok(i < 100 && app.exitCode === null);
+        await pause(250);
+    }
+    const moduleName = process.env.PUPPETEER_MODULE || "puppeteer-core";
+    const puppeteer = (
+        await import(
+            path.isAbsolute(moduleName)
+                ? pathToFileURL(moduleName).href
+                : moduleName
+        )
+    ).default;
+    browser = await puppeteer.launch({
+        executablePath:
+            process.env.CHROME_PATH ||
+            "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+        headless: true,
+        userDataDir: path.join(output, "chrome"),
+        args: ["--lang=zh-CN", "--autoplay-policy=no-user-gesture-required"],
+    });
+    page = (await browser.pages())[0];
+    await page.setViewport({ width: 1800, height: 1200 });
+    await page.setCookie({ name: "NEXT_LOCALE", value: "zh", url: base });
+    const errors = [];
+    page.on("pageerror", (e) => errors.push(String(e)));
+    await page.setRequestInterception(true);
+    page.on("request", (req) => {
+        const url = new URL(req.url());
+        if (
+            ["http:", "https:"].includes(url.protocol) &&
+            !["127.0.0.1", "localhost"].includes(url.hostname)
+        )
+            req.abort();
+        else req.continue();
+    });
+    await page.goto(`${base}/workspace`, { waitUntil: "networkidle0" });
+
+    console.log(`Evidence: ${output}`);
+    // Public synthetic speech produced entirely by macOS's installed voice.
+    const refAiff = path.join(output, "reference.aiff"),
+        reference = path.join(output, "reference.wav");
+    execFileSync("say", [
+        "-v",
+        "Tingting",
+        "-o",
+        refAiff,
+        "欢迎来到河边图书馆。今天我们一起听一个关于旧书和新朋友的故事。这是一段公开的测试声音。",
+    ]);
+    execFileSync("ffmpeg", [
+        "-y",
+        "-v",
+        "error",
+        "-i",
+        refAiff,
+        "-ar",
+        "24000",
+        "-ac",
+        "1",
+        reference,
+    ]);
+    await seed([node("upload-voice", "addAudioNode", {})]);
+    const uploaded = page.waitForResponse(
+        (r) =>
+            r.url().endsWith("/api/upload") && r.request().method() === "POST",
+    );
+    await (await page.$('input[type="file"]')).uploadFile(reference);
+    const { fileKey: refKey } = await (await uploaded).json();
+    await page.waitForSelector(".react-flow__node-audioNode audio");
+    records.reference = {
+        fileKey: refKey,
+        sha256: sha(fs.readFileSync(reference)),
+        origin: "macOS Tingting, local synthetic test voice",
+    };
+    await shot("01-independent-reference-upload");
+
+    const paragraph = (i) =>
+        `第${i}站，河边图书馆的志愿者打开窗户，让清晨的风穿过书架。小林把借来的旧书放在桌上，发现书页里夹着一张画有木桥的卡片。管理员告诉他，每位读者都可以在卡片背面写下一件值得记住的小事。小林想了想，写下了昨天帮助邻居找回雨伞的经过。傍晚，大家沿着河岸散步，远处传来孩子们读诗的声音。`;
+    const source =
+        Array.from({ length: 9 }, (_, i) => paragraph(i + 1)).join("\n\n") +
+        "\n";
+    const sourceFile = path.join(output, "public-long-script.txt");
+    fs.writeFileSync(sourceFile, source);
+    await seed([node("upload-script", "addFileNode", {})]);
+    const uploadedScript = page.waitForResponse(
+        (r) =>
+            r.url().endsWith("/api/upload") && r.request().method() === "POST",
+    );
+    await (await page.$('input[type="file"]')).uploadFile(sourceFile);
+    const { fileKey: sourceKey } = await (await uploadedScript).json();
+    await seed(
+        [
+            node("document", "fileNode", { fileKeys: [sourceKey] }),
+            node(
+                "parse",
+                "fileGenTextNode",
+                { pluginId: "tongflow-api-openai" },
+                450,
+            ),
+        ],
+        [edge("document", "out:fileNode", "parse", "in:document")],
+    );
+    console.log("Parsing uploaded document");
+    const parsed = await task("parse", "解析文档");
+    const extracted = (await graph()).nodes.find((n) => n.type === "textNode");
+    assert.equal(extracted.data.texts[0], source);
+    records.checks.documentExtraction = {
+        taskId: parsed.id,
+        chars: Array.from(source).length,
+        sourceSha256: sha(Buffer.from(source)),
+        exact: true,
+    };
+    await shot("02-extracted-source");
+
+    // Connect split directly to speech, so cardinality changes flow without rewiring.
+    const nodes = [
+        node("document", "fileNode", { fileKeys: [sourceKey] }, -1000),
+        node(
+            "parse",
+            "fileGenTextNode",
+            (await graph()).nodes.find((n) => n.id === "parse").data,
+            -500,
+        ),
+        node("text", "textNode", {
+            ...extracted.data,
+            label: "河边图书馆原文",
+        }),
+        node(
+            "split",
+            "splitTextNode",
+            {
+                pluginId: "tongflow-api-openai",
+                pluginParams: { max_segment_chars: 180, target_seconds: 25 },
+            },
+            550,
+        ),
+        node(
+            "voice",
+            "audioNode",
+            { fileKeys: [refKey], label: "此前上传的参考声音" },
+            600,
+            -550,
+        ),
+        node(
+            "clone",
+            "textGenSpeechCloneNode",
+            {
+                pluginId: "tongflow-api-qwen-audio",
+                texts: ["这段历史文字绝不能发送"],
+                label: "批量复刻配音",
+            },
+            1200,
+        ),
+    ];
+    await seed(nodes, [
+        edge("document", "out:fileNode", "parse", "in:document"),
+        edge("parse", "out:text", "text", "in:textNode"),
+        edge("text", "out:textNode", "split", "in:text"),
+        edge("split", "out:texts", "clone", "in:text"),
+    ]);
+    console.log("Splitting and connecting reference");
+    const splitTask = await task("split", "执行");
+    let g = await graph();
+    const segments = g.nodes.find((n) => n.id === "split").data.liveOutput
+        .texts;
+    assert.ok(segments.length >= 3);
+    assert.equal(segments.join(""), source);
+    assert.ok(segments.every((s) => Array.from(s).length <= 180));
+    records.checks.split = {
+        taskId: splitTask.id,
+        source,
+        segments,
+        exact: true,
+        chars: segments.map((s) => Array.from(s).length),
+    };
+    await connect("voice", "out:audioNode", "clone", "in:ref_audio");
+    await page.waitForFunction(() =>
+        document
+            .querySelector('[data-testid="reference-source"]')
+            .textContent.includes("此前上传"),
+    );
+    await shot("03-connected-reference-and-live-text");
+    records.checks.connectedByMouse = true;
+
+    // Drag the real edge endpoint onto the canvas, confirm deletion, then reconnect.
+    g = await graph();
+    const refEdge = g.edges.find(
+        (e) => e.source === "voice" && e.target === "clone",
+    );
+    const sourceUpdater = await page.$(
+        `.react-flow__edge[data-id="${refEdge.id}"] .react-flow__edgeupdater-source`,
+    );
+    assert.ok(sourceUpdater, "Edge reconnect source must exist");
+    const updaterBox = await sourceUpdater.boundingBox();
+    await page.mouse.move(
+        updaterBox.x + updaterBox.width / 2,
+        updaterBox.y + updaterBox.height / 2,
+    );
+    await page.mouse.down();
+    await page.mouse.move(450, 200, { steps: 25 });
+    await page.mouse.up();
+    await page.waitForSelector('[role="alertdialog"]');
+    await clickText("删除", '[role="alertdialog"]');
+    await page.waitForFunction(
+        (id) =>
+            !JSON.parse(localStorage.getItem("edges") || "[]").some(
+                (e) => e.id === id,
+            ),
+        {},
+        refEdge.id,
+    );
+    await shot("04-reference-disconnected");
+    assert.ok(await page.$eval(`${selector("clone")} button`, () => true));
+    await connect("voice", "out:audioNode", "clone", "in:ref_audio");
+    records.checks.disconnectedAndReconnectedByMouse = true;
+
+    console.log("Batch speech and downloads");
+    const before = calls.filter((c) => c.kind === "tts").length;
+    await button("clone", "生成语音");
+    await page.waitForFunction(
+        (count) => {
+            const clone = JSON.parse(
+                localStorage.getItem("nodes") || "[]",
+            ).find((n) => n.id === "clone");
+            return (
+                clone?.data.speechResults?.length === count &&
+                clone.data.speechResults.every(
+                    (r) => r.status === "COMPLETED" && r.audio,
+                )
+            );
+        },
+        { timeout: 90000 },
+        segments.length,
+    );
+    g = await graph();
+    const clone = g.nodes.find((n) => n.id === "clone");
+    assert.deepEqual(
+        clone.data.speechResults.map((r) => r.text),
+        segments,
+    );
+    const ttsCalls = calls.filter((c) => c.kind === "tts").slice(before);
+    assert.equal(ttsCalls.length, segments.length);
+    for (const segment of segments)
+        assert.ok(ttsCalls.some((c) => c.text_prompt.includes(segment.trim())));
+    assert.ok(
+        ttsCalls.every((c) => c.referenceSha256 === records.reference.sha256),
+    );
+    const audioNode = g.nodes.find(
+        (n) => n.type === "audioNode" && n.id !== "voice",
+    );
+    assert.equal(audioNode.data.fileKeys.length, segments.length);
+    records.checks.batch = {
+        orderedResults: clone.data.speechResults,
+        requests: ttsCalls,
+        orderedAudioKeys: audioNode.data.fileKeys,
+        oneReferenceForAll: true,
+    };
+    await shot("05-batch-source-audio-correspondence");
+    write("workflow-first-run.json", g);
+
+    // Each audio element really decodes and plays; download bytes via the UI.
+    const playback = await page.$$eval(
+        '[data-testid="speech-result-row"] audio',
+        async (elements) => {
+            const out = [];
+            for (const audio of elements) {
+                await audio.play();
+                await new Promise((r) => setTimeout(r, 100));
+                out.push({
+                    duration: audio.duration,
+                    time: audio.currentTime,
+                    error: audio.error?.code,
+                });
+                audio.pause();
+            }
+            return out;
+        },
+    );
+    assert.ok(playback.every((p) => p.duration > 0 && p.time > 0 && !p.error));
+    records.checks.playback = playback;
+    const client = await page.createCDPSession();
+    await client.send("Browser.setDownloadBehavior", {
+        behavior: "allow",
+        downloadPath: downloads,
+        eventsEnabled: true,
+    });
+    for (let i = 0; i < segments.length; i++) {
+        const buttons = await page.$$(
+            '[data-testid="speech-result-row"] button',
+        );
+        await buttons[i].click();
+        for (
+            let retry = 0;
+            fs.readdirSync(downloads).filter((s) => s.endsWith(".wav")).length <
+            i + 1;
+            retry++
+        ) {
+            assert.ok(retry < 100);
+            await pause(100);
+        }
+    }
+    const downloadedHashes = fs
+        .readdirSync(downloads)
+        .map((f) => sha(fs.readFileSync(path.join(downloads, f))));
+    assert.deepEqual(
+        [...downloadedHashes].sort(),
+        ttsCalls.map((c) => c.outputSha256).sort(),
+    );
+    records.checks.downloadedAllSegments = downloadedHashes;
+
+    // Edit the actual upstream text inspector. Old split output must go stale.
+    console.log("Editing upstream and rerunning");
+    const updated = `修改后的开头：这次活动从傍晚开始。\n\n${source.slice(0, 330)}`;
+    const inspect = await page.$(
+        `${selector("text")} button[title="全屏预览"]`,
+    );
+    assert.ok(inspect);
+    await inspect.click();
+    await page.waitForSelector("textarea");
+    const editor = await page.$("body > div.fixed textarea");
+    assert.ok(editor);
+    await editor.evaluate((el) => {
+        el.focus();
+        el.select();
+    });
+    await page.keyboard.press("Backspace");
+    await editor.type(updated);
+    assert.equal(await editor.evaluate((el) => el.value), updated);
+    await page.click("body > div.fixed button");
+    await pause(700);
+    await page.waitForFunction(
+        () => !document.querySelector('[data-testid="effective-speech-text"]'),
+    );
+    await shot("06-upstream-edited-stale-input-rejected");
+    const editedSplit = await task("split", "执行");
+    g = await graph();
+    const updatedSegments = g.nodes.find((n) => n.id === "split").data
+        .liveOutput.texts;
+    assert.equal(updatedSegments.join(""), updated);
+    const preview = await page.$$eval(
+        '[data-testid="effective-speech-text"]',
+        (els) => els.map((e) => e.childNodes[1].textContent),
+    );
+    assert.deepEqual(preview, updatedSegments);
+    const priorCount = calls.filter((c) => c.kind === "tts").length;
+    await button("clone", "生成语音");
+    await page.waitForFunction(
+        (segments) => {
+            const clone = JSON.parse(
+                localStorage.getItem("nodes") || "[]",
+            ).find((n) => n.id === "clone");
+            return (
+                clone?.data.speechResults?.length === segments.length &&
+                clone.data.speechResults.every(
+                    (r, i) =>
+                        r.status === "COMPLETED" && r.text === segments[i],
+                )
+            );
+        },
+        { timeout: 60000 },
+        updatedSegments,
+    );
+    const updatedCalls = calls
+        .filter((c) => c.kind === "tts")
+        .slice(priorCount);
+    assert.equal(updatedCalls.length, updatedSegments.length);
+    assert.ok(
+        updatedSegments.every((s) =>
+            updatedCalls.some((c) => c.text_prompt.includes(s.trim())),
+        ),
+    );
+    records.checks.editAndRerun = {
+        splitTask: editedSplit.id,
+        updated,
+        preview,
+        requests: updatedCalls,
+        exact: true,
+    };
+    await shot("07-updated-text-and-new-results");
+
+    // Use the app's real Save dialog (exporter included), then its workflow library.
+    console.log("Saving and reopening");
+    const titleButton = await page.waitForSelector("button::-p-text(新创意)");
+    await titleButton.hover();
+    await clickText("保存", "div.absolute");
+    await page.waitForSelector('[role="dialog"]');
+    const nameInput = await page.$('[role="dialog"] input');
+    await nameInput.click({ clickCount: 3 });
+    await nameInput.type("公开配音链路验收");
+    const savedResponse = page.waitForResponse(
+        (r) =>
+            r.url().endsWith("/api/workspace/save") &&
+            r.request().method() === "POST",
+    );
+    await clickText("保存", '[role="dialog"]');
+    const saved = await savedResponse;
+    assert.equal(saved.status(), 200);
+    const { workflowId } = await saved.json();
+    const savePayload = JSON.parse(saved.request().postData());
+    write("saved-workflow.json", savePayload);
+    await page.reload({ waitUntil: "networkidle0" });
+    await fitCanvas();
+    g = await graph();
+    assert.equal(g.nodes.find((n) => n.id === "text").data.texts[0], updated);
+    assert.deepEqual(
+        g.nodes
+            .find((n) => n.id === "clone")
+            .data.speechResults.map((r) => r.text),
+        updatedSegments,
+    );
+    assert.ok(
+        g.edges.some((e) => e.source === "voice" && e.target === "clone"),
+    );
+    records.checks.savedReloaded = {
+        workflowId,
+        connectionsAndResultsPreserved: true,
+    };
+    await shot("08-saved-and-reloaded");
+
+    // Reopen from the database through the real workflow library.
+    await seed([node("temporary", "textNode", { texts: ["临时画布"] })]);
+    await page.click('button[aria-label="我的工作流"]');
+    await page.waitForSelector('[role="dialog"]');
+    await clickText("打开", '[role="dialog"]');
+    await page.waitForSelector(selector("clone"));
+    g = await graph();
+    assert.deepEqual(
+        g.nodes
+            .find((n) => n.id === "clone")
+            .data.speechResults.map((r) => r.text),
+        updatedSegments,
+    );
+    records.checks.reopenedFromDatabase = true;
+
+    // Execute from the real mode switch and confirmation dialog. This exercises
+    // the app exporter, Python engine, and canvas SSE publisher together.
+    console.log("Executing reopened workflow from the UI");
+    const modeButtons = await page.$$("button[aria-pressed]");
+    await modeButtons[1].click();
+    const play = await page.waitForSelector(
+        "button:not([aria-pressed]):has(svg.lucide-play):not(.react-flow__node button)",
+    );
+    await play.click();
+    await page.waitForSelector('[role="dialog"]');
+    const executionResponse = page.waitForResponse(
+        (r) =>
+            r.url().endsWith("/api/workflow/execute") &&
+            r.request().method() === "POST",
+    );
+    await clickText("确认执行", '[role="dialog"]');
+    const execution = await executionResponse;
+    assert.equal(execution.status(), 200);
+    const { taskId: engineId } = await execution.json();
+    await page.waitForFunction(
+        async (id) => {
+            const { tasks } = await (
+                await fetch("/api/task/list?limit=200")
+            ).json();
+            return tasks.some(
+                (t) =>
+                    t.id === id && ["completed", "failed"].includes(t.status),
+            );
+        },
+        { polling: 250, timeout: 90000 },
+        engineId,
+    );
+    const engineTask = await page.evaluate(
+        async (id) =>
+            (await (await fetch("/api/task/list?limit=200")).json()).tasks.find(
+                (t) => t.id === id,
+            ),
+        engineId,
+    );
+    assert.equal(engineTask.status, "completed", engineTask.error);
+    await pause(1000);
+    g = await graph();
+    assert.equal(
+        g.nodes.find((n) => n.id === "clone").data.outputPending,
+        false,
+    );
+    assert.deepEqual(
+        g.nodes
+            .find((n) => n.id === "clone")
+            .data.speechResults.map((r) => r.text),
+        updatedSegments,
+    );
+    assert.ok(
+        g.nodes
+            .find((n) => n.id === "clone")
+            .data.speechResults.every((r) =>
+                r.audio.startsWith(`tasks/${engineId}/`),
+            ),
+    );
+    records.checks.engine = {
+        taskId: engineId,
+        complete: true,
+        usesAppExport: true,
+        orderedRows: g.nodes.find((n) => n.id === "clone").data.speechResults,
+    };
+    write("workflow-engine-run.json", g);
+    await shot("09-reopened-workflow-engine-results");
+    assert.equal(errors.length, 0, errors.join("\n"));
+    write("results.json", records);
+    write("provider-requests.json", calls);
+    console.log(
+        JSON.stringify(
+            {
+                output,
+                checks: Object.keys(records.checks),
+                provider: records.provider,
+            },
+            null,
+            2,
+        ),
+    );
+} catch (error) {
+    records.failure = String(error);
+    write("results.json", records);
+    write("provider-requests.json", calls);
+    if (page) {
+        await page
+            .screenshot({ path: path.join(shots, "failure.png") })
+            .catch(() => {});
+        fs.writeFileSync(
+            path.join(output, "failure-dom.txt"),
+            await page.evaluate(() => document.body.innerText).catch(String),
+        );
+    }
+    throw error;
+} finally {
+    if (browser) await browser.close();
+    if (app) app.kill();
+    await new Promise((r) => mock.close(r));
+}

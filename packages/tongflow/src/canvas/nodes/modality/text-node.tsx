@@ -92,7 +92,10 @@ const TextNode = ({ selected, data }: TextNodeRfProps) => {
     // Handler to save edited text
     const handleSaveText = (newText: string) => {
         if (nodeId) {
-            updateNodeData(nodeId, { texts: [newText] });
+            updateNodeData(nodeId, {
+                texts: [newText],
+                manualTextOverride: true,
+            });
         }
     };
 
@@ -147,6 +150,11 @@ const TextNode = ({ selected, data }: TextNodeRfProps) => {
                         </NodeHeaderMenuAction>
                     </NodeHeaderActions>
                 </NodeHeader>
+                {data.manualTextOverride === true && (
+                    <p className="px-3 pb-2 text-xs text-amber-600">
+                        {t("editedSource")}
+                    </p>
+                )}
 
                 {/* Content */}
                 {count === 0 || (isSingle && !textList[0]?.trim()) ? (
@@ -229,6 +237,8 @@ const areEqual = (prevProps: TextNodeRfProps, nextProps: TextNodeRfProps) => {
 
     return (
         prevProps.selected === nextProps.selected &&
+        prevProps.data.manualTextOverride ===
+            nextProps.data.manualTextOverride &&
         JSON.stringify(prevTexts) === JSON.stringify(nextTexts)
     );
 };

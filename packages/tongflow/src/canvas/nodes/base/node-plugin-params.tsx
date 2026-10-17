@@ -10,11 +10,12 @@ import type {
     PluginParamSpec,
 } from "../../../core";
 import { normalizePluginParams, samePluginParams } from "../../../core";
-import useFlow from "../../hooks/use-flow";
 import { resolvePluginModel } from "../../hooks/plugin-model-selection";
+import useFlow from "../../hooks/use-flow";
 import {
     useNodePluginModels,
     useNodePluginParams,
+    usePluginsRegistry,
 } from "../../hooks/use-plugins-registry";
 import { Card } from "../../ui/card";
 import { Input } from "../../ui/input";
@@ -60,6 +61,7 @@ export function NodePluginParams({ nodeSlot, data }: NodePluginParamsProps) {
     const currentModel = String(data.pluginModel ?? "").trim();
     const model = resolvePluginModel(pluginId, currentModel, models);
     const entries = useNodePluginParams(nodeSlot, pluginId, model);
+    const { isLoaded, registry } = usePluginsRegistry();
 
     const values = useMemo(() => readParams(data), [data]);
 
@@ -67,6 +69,13 @@ export function NodePluginParams({ nodeSlot, data }: NodePluginParamsProps) {
     // values that merely restate the default. Programmatic normalization —
     // never part of undo history, or it re-fires after every undo.
     useEffect(() => {
+        // Restoring a workflow mounts before the registry fetch completes.
+        // An empty transient catalog must never erase its saved parameters.
+        if (
+            !isLoaded ||
+            !registry?.plugins[pluginId]?.methodsByNodeSlot?.[nodeSlot]
+        )
+            return;
         const normalized = normalizePluginParams(entries, values);
         if (samePluginParams(normalized, data.pluginParams)) return;
         if (
@@ -78,7 +87,17 @@ export function NodePluginParams({ nodeSlot, data }: NodePluginParamsProps) {
         if (Object.keys(normalized).length === 0) delete next.pluginParams;
         else next.pluginParams = normalized;
         updates(id, next, { history: false });
-    }, [id, data, entries, values, updates]);
+    }, [
+        id,
+        data,
+        entries,
+        values,
+        updates,
+        isLoaded,
+        registry,
+        pluginId,
+        nodeSlot,
+    ]);
 
     const setParam = useCallback(
         (name: string, value: unknown) => {

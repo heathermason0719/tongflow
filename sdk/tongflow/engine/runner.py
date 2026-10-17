@@ -329,7 +329,7 @@ def run_workflow(
             plugin_id = (node.get("pluginId") or "").strip()
             model = (node.get("model") or "").strip() or None
             raw_params = node.get("params")
-            params = raw_params if isinstance(raw_params, dict) and raw_params else None
+            plugin_params = raw_params if isinstance(raw_params, dict) and raw_params else None
             emit(
                 {
                     "type": "node_started",
@@ -379,8 +379,8 @@ def run_workflow(
                         raw = invoker(
                             plugin_id,
                             slot,
-                            {**business_input, "_params": params}
-                            if params
+                            {**business_input, "_params": plugin_params}
+                            if plugin_params
                             else business_input,
                             plugin_dir,
                             model,
@@ -396,7 +396,7 @@ def run_workflow(
                             sdk_root=SDK_ROOT,
                             task_id=task_id,
                             model=model,
-                            params=params,
+                            params=plugin_params,
                             on_progress=on_progress,
                             env_extra=env,
                         )
@@ -445,6 +445,13 @@ def run_workflow(
                         "type": "node_completed",
                         "nodeId": node_id,
                         "output": result,
+                        **({"speechResults": [
+                            {"text": str(p.get("text") or ""),
+                             "refAudio": str(p.get("ref_audio") or ""),
+                             "status": "COMPLETED",
+                             "audio": (item.get("audio") or {}).get("file_key")}
+                            for p, item in zip(param_sets, item_results)
+                        ]} if slot == "text-gen-speech-clone" else {}),
                         "label": label,
                     }
                 )

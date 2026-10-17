@@ -174,6 +174,7 @@ export const NODE_TYPE_SOURCE_SPEC: Partial<
     },
     textGenSpeechCloneComposeNode: {
         text: batchOn({ nodeType: "textNode", path: "texts" }),
+        ref_audio: handle({ nodeType: "audioNode", manual: true }),
     },
     imageFusionNode: {
         images: collectAll(),
@@ -249,7 +250,7 @@ export const NODE_TYPE_SOURCE_SPEC: Partial<
     },
     textGenSpeechCloneNode: {
         text: batchOn({ nodeType: "textNode", path: "texts" }),
-        ref_audio: configField(),
+        ref_audio: handle({ nodeType: "audioNode", manual: true }),
     },
     textGenSpeechInstructNode: {
         text: batchOn({ nodeType: "textNode", path: "texts" }),

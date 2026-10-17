@@ -3,6 +3,7 @@ import { memo } from "react";
 import { useTranslations } from "use-intl";
 import type { TongflowPluginNodeProps } from "../../../core";
 import { useAbiForm } from "../../hooks/use-abi-form";
+import { useEffectiveInputs } from "../../hooks/use-effective-inputs";
 import { Card } from "../../ui/card";
 import { Label } from "../../ui/label";
 
@@ -18,7 +19,12 @@ const TextGenSpeechInstructNode = ({
 >) => {
     const t = useTranslations("Workspace.nodes");
     const form = useAbiForm("text-gen-speech-instruct");
-    const texts = data.texts ?? [];
+    const input = useEffectiveInputs("text-gen-speech-instruct", form.state);
+    const texts = input.prompts
+        .map((p) => p.text)
+        .filter(
+            (x): x is string => typeof x === "string" && x.trim().length > 0,
+        );
 
     return (
         <AbiNodeShell
