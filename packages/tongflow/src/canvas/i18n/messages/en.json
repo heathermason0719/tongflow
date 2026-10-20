@@ -1007,6 +1007,7 @@
                 "modelChanged": "The model changed, omitted or reordered source content. Review the comparison before adoption.",
                 "adopt": "Adopt current draft",
                 "adopted": "Adopted",
+                "bulkClone": "Batch voice clone ({count} segments)",
                 "edit": "Review and edit",
                 "retained": "The original, model proposal and current draft are retained separately. Speech uses the adopted current draft.",
                 "original": "Original script (complete source snapshot)",

@@ -2,10 +2,16 @@ import { useNodeId } from "@xyflow/react";
 import { Scissors } from "lucide-react";
 import { memo } from "react";
 import { useTranslations } from "use-intl";
-import { segmentDraft, type TongflowPluginNodeProps } from "../../../core";
+import {
+    canAdoptDraft,
+    segmentDraft,
+    type TongflowPluginNodeProps,
+} from "../../../core";
 import { useAbiForm } from "../../hooks/use-abi-form";
 import { useEffectiveInputs } from "../../hooks/use-effective-inputs";
 import useFlow from "../../hooks/use-flow";
+import { createBatchSpeechClone } from "../../lib/task/create-batch-speech-clone";
+import { Button } from "../../ui/button";
 import { AbiNodeShell } from "../base/abi-node-shell";
 import { NodeTextarea } from "../base/node-textarea";
 import { SegmentDraftEditor } from "./segment-draft-editor";
@@ -51,10 +57,34 @@ const SplitTextNode = ({
         >
             <div className="p-4 space-y-4">
                 {draft && (
-                    <SegmentDraftEditor
-                        draft={draft}
-                        pending={data.outputPending === true}
-                    />
+                    <>
+                        <SegmentDraftEditor
+                            draft={draft}
+                            pending={data.outputPending === true}
+                        />
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="nodrag nowheel"
+                            data-testid="create-batch-speech-clone"
+                            disabled={
+                                data.outputPending === true ||
+                                !draft.reviewed ||
+                                !canAdoptDraft(draft)
+                            }
+                            onClick={() => {
+                                if (nodeId)
+                                    createBatchSpeechClone(
+                                        useFlow.getState,
+                                        nodeId,
+                                    );
+                            }}
+                        >
+                            {t("segmentDraft.bulkClone", {
+                                count: draft.segments.length,
+                            })}
+                        </Button>
+                    </>
                 )}
                 <p className="text-xs text-muted-foreground">
                     {t("speechFlow.splitHint")}
